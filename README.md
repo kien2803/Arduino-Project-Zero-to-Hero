@@ -12,21 +12,22 @@ A curated, beginner-friendly path through classic Arduino projects — from blin
 |---|---------|------------|---------------|
 | 01 | [Traffic Light](./01_traffic_light/) | 🟢 Beginner | `digitalWrite`, `delay`, sequencing |
 | 02 | [Dimmer LED (Potentiometer)](./02_dimmer_led/) | 🟢 Beginner | `analogRead`, `analogWrite` (PWM), `map()` |
+| 03 | [Piano (Buzzer + Pushbuttons)](./03_piano/) | 🟢 Beginner | `tone()`, `INPUT_PULLUP`, active LOW logic |
 
 More projects coming soon.
 
 ---
-
-## Repository Layout
-
 ```
 Arduino-Project-Zero-to-Hero/
 ├── README.md                  ← you are here
 ├── 01_traffic_light/          ← 3-LED traffic light (digital outputs)
 │   ├── traffic-light.ino
 │   └── README.md
-└── 02_dimmer_led/             ← Potentiometer-controlled LED (analog + PWM)
-    ├── dimmer-led.ino
+├── 02_dimmer_led/             ← Potentiometer-controlled LED (analog + PWM)
+│   ├── dimmer-led.ino
+│   └── README.md
+└── 03_piano/                  ← 4-key piano with buzzer (tone + buttons)
+    ├── piano.ino
     └── README.md
 ```
 
@@ -34,12 +35,12 @@ Each project folder is **standalone** — open its `.ino` in the Arduino IDE and
 
 ---
 
-## Hardware You Will Need
-
 - **Arduino Uno** (or Nano / Nano Every) — the recommended starting board.
 - A handful of **5 mm LEDs** (red, yellow, green).
 - **220 Ω resistors** for every LED.
 - **10 kΩ potentiometer** (linear taper) — for projects involving analog input.
+- **Passive buzzer** (piezo) — for tone generation projects.
+- **Pushbuttons** (momentary tactile switches) — for input projects.
 - **Breadboard** and **jumper wires** (M–M and M–F as needed).
 - **USB cable** (Type-B for Uno, Mini-USB for Nano).
 
@@ -77,7 +78,8 @@ If you're brand new to Arduino, work through the projects in order:
 ```mermaid
 flowchart LR
   P01["01<br/>Traffic Light<br/>🟢 Digital"] --> P02["02<br/>Dimmer LED<br/>🟢 Analog + PWM"]
-  P02 --> P03["03<br/>Coming soon"]
+  P02 --> P03["03<br/>Piano<br/>🟢 Tone + Buttons"]
+  P03 --> P04["04<br/>Coming soon"]
 ```
 
 Each project builds on the previous one — by the end you'll have touched every core Arduino primitive: digital I/O, analog input, PWM output, timing, sensors, and serial communication.
