@@ -1,53 +1,84 @@
-# 04 — Automatic Night Light
+# 04 — Automatic Night Light (4-pin RGB LED)
 
-A simple corridor / bedroom night light that turns on automatically when it gets dark.
+A soft night light that turns on automatically when the room becomes dark.  
+Uses a **4-pin RGB LED** so you can choose any color.
 
 ## What it does
 
-When the ambient light falls below a threshold, the LED turns on.  
+When the ambient light falls below a threshold, the RGB LED lights up with a warm color.  
 When the room becomes bright again, the LED turns off.
 
-This is exactly how many cheap plug-in night lights work.
+This is how many modern night lights and smart bulbs behave — only simplified.
 
 ## Components
 
-| Item | Qty |
-|------|-----|
-| Arduino Uno | 1 |
-| Light sensor module (LDR) | 1 |
-| LED + 220 Ω resistor | 1 |
-| Jumper wires |  |
+| Item | Qty | Notes |
+|------|-----|-------|
+| Arduino Uno | 1 | |
+| Light sensor module (LDR) | 1 | Analog output |
+| **4-pin RGB LED** | 1 | R, G, B + Common |
+| Resistors 220 Ω | 3 | One for each color pin |
+| Jumper wires |  | |
+
+## Understanding the 4-pin RGB LED
+
+A 4-pin RGB LED has:
+
+- 3 color pins: **Red**, **Green**, **Blue**
+- 1 common pin (longest pin or marked pin)
+
+There are two types:
+
+| Type | Common pin connects to | How to turn a color ON |
+|------|------------------------|------------------------|
+| **Common Cathode** | GND | Send HIGH / PWM to the color pin |
+| **Common Anode** | 5V | Send LOW / inverted PWM to the color pin |
+
+Most cheap kit RGB LEDs are **Common Cathode**.  
+If the colors are inverted (LED stays on when it should be off), change this line in the code:
+
+```cpp
+const bool COMMON_ANODE = true;   // or false
+```
 
 ## Wiring
 
 ```
-Light Sensor     Arduino
-------------     -------
-VCC          --> 5V
-GND          --> GND
-A0 / OUT     --> A0
+Light Sensor          Arduino
+------------          -------
+VCC               --> 5V
+GND               --> GND
+A0 / OUT          --> A0
 
-LED anode --> 220 Ω --> D9
-LED cathode ----------> GND
+4-pin RGB LED
+-------------
+Red pin    --> 220 Ω --> D9
+Green pin  --> 220 Ω --> D10
+Blue pin   --> 220 Ω --> D11
+Common     --> GND   (if Common Cathode)
+           --> 5V    (if Common Anode)
 ```
 
 ## How it works
 
-1. The light sensor outputs a higher voltage in bright light and a lower voltage in the dark.
-2. `analogRead(A0)` gives a number between 0 and 1023.
-3. If the value is below the threshold → we consider it “dark” and turn the LED on.
+1. The light sensor gives a higher value in bright light and a lower value in the dark.
+2. When the value drops below `threshold`, we call `setColor()` with a warm orange.
+3. `analogWrite()` on the three pins creates any color by mixing Red, Green and Blue.
 
-You can change the `threshold` value to make the light more or less sensitive.
+You can easily change the night-light color by editing the numbers inside `setColor(r, g, b)`.
 
 ## Upload & Test
 
 1. Upload the sketch.
 2. Open Serial Monitor (9600 baud) to see the live light level.
-3. Cover the sensor with your hand → LED should turn on.
-4. Shine a phone flashlight on it → LED should turn off.
+3. Cover the sensor with your hand → RGB LED should glow warm orange.
+4. Shine a light on the sensor → LED turns off.
+
+If the LED behaves opposite (on when bright), set `COMMON_ANODE = true` and upload again.
 
 ## Extensions
 
-- Use `analogWrite()` so the LED brightness changes gradually.
-- Add a second LED or a relay to control a real 12 V / 220 V lamp.
-- Combine with the thermometer project to make a “night light that also shows temperature”.
+- Make the brightness change smoothly with the light level (`map()` + `analogWrite`).
+- Different colors for different light ranges (blue at dusk, warm at night, etc.).
+- Add a button to cycle through favorite night-light colors.
+- Combine with the thermometer project later.
