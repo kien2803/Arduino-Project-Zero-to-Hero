@@ -1,49 +1,40 @@
 // 04 - Automatic Night Light
-// Uses a 4-pin light sensor module (VCC, GND, AO, DO)
-// Turns on an LED when it gets dark
+// 4-pin Light Sensor module (VCC, GND, AO, DO)
+// LED turns ON when it is dark
 
-// Light sensor pins
-const int AO_PIN = A0;   // Analog output
-const int DO_PIN = 2;    // Digital output (threshold set by potentiometer on module)
-
-// LED pin (you can use a normal LED or one channel of RGB LED)
-const int ledPin = 9;
+const int AO_PIN  = A0;   // Analog output of the sensor
+const int DO_PIN  = 2;    // Digital output of the sensor
+const int LED_PIN = 9;    // LED
 
 void setup() {
   pinMode(DO_PIN, INPUT);
-  pinMode(ledPin, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
   Serial.begin(9600);
-  Serial.println("Automatic Night Light ready");
-  Serial.println("Using 4-pin light sensor (AO + DO)");
+  Serial.println("Automatic Night Light");
+  Serial.println("4-pin light sensor (AO + DO)");
+  Serial.println("----------------------------");
 }
 
 void loop() {
-  int analogValue = analogRead(AO_PIN);     // 0 ~ 1023
-  int digitalValue = digitalRead(DO_PIN);   // HIGH or LOW
+  int analogValue  = analogRead(AO_PIN);      // 0 (bright) ~ 1023 (dark)  - may be inverted on some modules
+  int digitalValue = digitalRead(DO_PIN);     // HIGH or LOW
 
   Serial.print("AO: ");
   Serial.print(analogValue);
-  Serial.print("  |  DO: ");
-  Serial.println(digitalValue == HIGH ? "HIGH (bright)" : "LOW (dark)");
+  Serial.print("   DO: ");
+  Serial.println(digitalValue);
 
-  // Method 1: Use Digital Output (easiest)
-  // Many modules: DO = LOW when dark (depends on the potentiometer)
+  // ----- Use Digital Output (recommended for beginners) -----
+  // Most MS-CDS05 modules: DO = LOW when dark (after adjusting the potentiometer)
+  // If your LED turns on when it is bright, change LOW to HIGH below.
+
   if (digitalValue == LOW) {
-    digitalWrite(ledPin, HIGH);   // turn LED on when dark
+    digitalWrite(LED_PIN, HIGH);   // dark → LED ON
   } else {
-    digitalWrite(ledPin, LOW);
+    digitalWrite(LED_PIN, LOW);    // bright → LED OFF
   }
 
-  // Method 2: Use Analog Output (more flexible)
-  // Uncomment the block below if you prefer analog control
-  /*
-  const int threshold = 400;      // adjust to your room
-  if (analogValue < threshold) {
-    digitalWrite(ledPin, HIGH);
-  } else {
-    digitalWrite(ledPin, LOW);
-  }
-  */
-
-  delay(200);
+  delay(300);
 }
