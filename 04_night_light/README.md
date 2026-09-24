@@ -1,84 +1,82 @@
-# 04 — Automatic Night Light (4-pin RGB LED)
+# 04 — Automatic Night Light
 
-A soft night light that turns on automatically when the room becomes dark.  
-Uses a **4-pin RGB LED** so you can choose any color.
+A simple night light that turns on automatically when the surroundings become dark.  
+Designed for a **4-pin light sensor module** (VCC, GND, AO, DO).
 
 ## What it does
 
-When the ambient light falls below a threshold, the RGB LED lights up with a warm color.  
-When the room becomes bright again, the LED turns off.
+When the light level drops, the LED turns on.  
+When it becomes bright again, the LED turns off.
 
-This is how many modern night lights and smart bulbs behave — only simplified.
+This is the same working principle as many cheap automatic night lights.
 
 ## Components
 
 | Item | Qty | Notes |
 |------|-----|-------|
 | Arduino Uno | 1 | |
-| Light sensor module (LDR) | 1 | Analog output |
-| **4-pin RGB LED** | 1 | R, G, B + Common |
-| Resistors 220 Ω | 3 | One for each color pin |
+| **4-pin Light Sensor module** | 1 | Pins: VCC, GND, AO, DO |
+| LED + 220 Ω resistor | 1 | Or one color of an RGB LED |
 | Jumper wires |  | |
 
-## Understanding the 4-pin RGB LED
+## Understanding the 4-pin Light Sensor
 
-A 4-pin RGB LED has:
+Most 4-pin light sensor modules have:
 
-- 3 color pins: **Red**, **Green**, **Blue**
-- 1 common pin (longest pin or marked pin)
+| Pin | Name | Function |
+|-----|------|----------|
+| 1 | VCC | 3.3V or 5V |
+| 2 | GND | Ground |
+| 3 | AO | Analog Output (0–1023) |
+| 4 | DO | Digital Output (HIGH/LOW) |
 
-There are two types:
+The module usually has a small blue potentiometer.  
+Turning it changes the threshold of the **DO** pin.
 
-| Type | Common pin connects to | How to turn a color ON |
-|------|------------------------|------------------------|
-| **Common Cathode** | GND | Send HIGH / PWM to the color pin |
-| **Common Anode** | 5V | Send LOW / inverted PWM to the color pin |
-
-Most cheap kit RGB LEDs are **Common Cathode**.  
-If the colors are inverted (LED stays on when it should be off), change this line in the code:
-
-```cpp
-const bool COMMON_ANODE = true;   // or false
-```
+- AO → gives a continuous value (more precise)
+- DO → simple HIGH/LOW signal (very easy to use)
 
 ## Wiring
 
 ```
-Light Sensor          Arduino
-------------          -------
-VCC               --> 5V
-GND               --> GND
-A0 / OUT          --> A0
+Light Sensor (4-pin)     Arduino
+--------------------     -------
+VCC                  --> 5V
+GND                  --> GND
+AO                   --> A0
+DO                   --> D2
 
-4-pin RGB LED
--------------
-Red pin    --> 220 Ω --> D9
-Green pin  --> 220 Ω --> D10
-Blue pin   --> 220 Ω --> D11
-Common     --> GND   (if Common Cathode)
-           --> 5V    (if Common Anode)
+LED anode --> 220 Ω --> D9
+LED cathode ----------> GND
 ```
 
 ## How it works
 
-1. The light sensor gives a higher value in bright light and a lower value in the dark.
-2. When the value drops below `threshold`, we call `setColor()` with a warm orange.
-3. `analogWrite()` on the three pins creates any color by mixing Red, Green and Blue.
+1. The sensor measures ambient light.
+2. We read both AO (analog) and DO (digital).
+3. In the default code we use the **DO pin**:
+   - When it is dark → DO becomes LOW → LED turns ON
+   - When it is bright → DO becomes HIGH → LED turns OFF
 
-You can easily change the night-light color by editing the numbers inside `setColor(r, g, b)`.
+You can also switch to the analog method by uncommenting the second part of the code and adjusting the `threshold` value.
 
 ## Upload & Test
 
 1. Upload the sketch.
-2. Open Serial Monitor (9600 baud) to see the live light level.
-3. Cover the sensor with your hand → RGB LED should glow warm orange.
-4. Shine a light on the sensor → LED turns off.
+2. Open Serial Monitor (9600 baud).
+3. You will see both AO and DO values live.
+4. Cover the sensor with your hand → LED should turn on.
+5. Shine a light on it → LED should turn off.
 
-If the LED behaves opposite (on when bright), set `COMMON_ANODE = true` and upload again.
+If the LED behavior is reversed, just swap the `HIGH` / `LOW` in the `if` statement, or adjust the potentiometer on the sensor module.
+
+## Tips
+
+- Turn the potentiometer on the module while watching the Serial Monitor until DO changes cleanly between bright and dark.
+- For smoother control, use the analog method (`analogRead`) and `analogWrite` on the LED for gradual brightness.
 
 ## Extensions
 
-- Make the brightness change smoothly with the light level (`map()` + `analogWrite`).
-- Different colors for different light ranges (blue at dusk, warm at night, etc.).
-- Add a button to cycle through favorite night-light colors.
-- Combine with the thermometer project later.
+- Make the LED brightness change smoothly according to the AO value.
+- Use an RGB LED and change color based on light level.
+- Add a relay to control a real lamp.

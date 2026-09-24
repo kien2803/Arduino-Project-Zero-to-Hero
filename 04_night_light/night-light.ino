@@ -1,60 +1,49 @@
-// 04 - Automatic Night Light (4-pin RGB LED)
-// Turns on a soft warm light when the environment becomes dark
+// 04 - Automatic Night Light
+// Uses a 4-pin light sensor module (VCC, GND, AO, DO)
+// Turns on an LED when it gets dark
 
-const int lightPin = A0;     // Light sensor (analog)
+// Light sensor pins
+const int AO_PIN = A0;   // Analog output
+const int DO_PIN = 2;    // Digital output (threshold set by potentiometer on module)
 
-// 4-pin RGB LED pins (change if your wiring is different)
-const int redPin   = 9;
-const int greenPin = 10;
-const int bluePin  = 11;
-
-// Set to true if your RGB LED is Common Anode (common pin to 5V)
-// Set to false if Common Cathode (common pin to GND)
-const bool COMMON_ANODE = false;
-
-const int threshold = 400;   // Adjust this value to your room
+// LED pin (you can use a normal LED or one channel of RGB LED)
+const int ledPin = 9;
 
 void setup() {
-  pinMode(redPin, OUTPUT);
-  pinMode(greenPin, OUTPUT);
-  pinMode(bluePin, OUTPUT);
-  turnOff();
+  pinMode(DO_PIN, INPUT);
+  pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
-  Serial.println("Automatic Night Light (RGB) ready");
-}
-
-void setColor(int r, int g, int b) {
-  if (COMMON_ANODE) {
-    // For common anode: LOW = on, HIGH = off
-    analogWrite(redPin,   255 - r);
-    analogWrite(greenPin, 255 - g);
-    analogWrite(bluePin,  255 - b);
-  } else {
-    // For common cathode: HIGH = on
-    analogWrite(redPin,   r);
-    analogWrite(greenPin, g);
-    analogWrite(bluePin,  b);
-  }
-}
-
-void turnOff() {
-  setColor(0, 0, 0);
+  Serial.println("Automatic Night Light ready");
+  Serial.println("Using 4-pin light sensor (AO + DO)");
 }
 
 void loop() {
-  int lightLevel = analogRead(lightPin);
-  Serial.print("Light level: ");
-  Serial.println(lightLevel);
+  int analogValue = analogRead(AO_PIN);     // 0 ~ 1023
+  int digitalValue = digitalRead(DO_PIN);   // HIGH or LOW
 
-  if (lightLevel < threshold) {
-    // Dark → soft warm white / orange night light
-    // You can change these values to any color you like
-    setColor(180, 40, 0);      // warm orange
-    // setColor(255, 80, 20);  // brighter warm
-    // setColor(0, 0, 80);     // soft blue
+  Serial.print("AO: ");
+  Serial.print(analogValue);
+  Serial.print("  |  DO: ");
+  Serial.println(digitalValue == HIGH ? "HIGH (bright)" : "LOW (dark)");
+
+  // Method 1: Use Digital Output (easiest)
+  // Many modules: DO = LOW when dark (depends on the potentiometer)
+  if (digitalValue == LOW) {
+    digitalWrite(ledPin, HIGH);   // turn LED on when dark
   } else {
-    turnOff();
+    digitalWrite(ledPin, LOW);
   }
+
+  // Method 2: Use Analog Output (more flexible)
+  // Uncomment the block below if you prefer analog control
+  /*
+  const int threshold = 400;      // adjust to your room
+  if (analogValue < threshold) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  */
 
   delay(200);
 }
