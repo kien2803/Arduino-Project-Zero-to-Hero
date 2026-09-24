@@ -1,40 +1,37 @@
-// 04 - Automatic Night Light
-// 4-pin Light Sensor module (VCC, GND, AO, DO)
-// LED turns ON when it is dark
+/*
+  PROJECT 04: AUTOMATIC NIGHT LIGHT (USING HIGH-SENSITIVITY ANALOG)
+  - MS-CDS05: VCC -> 5V | GND -> GND | A0 -> A0
+  - LED: Positive pin (+) -> 220R Resistor -> Pin 9
+*/
 
-const int AO_PIN  = A0;   // Analog output of the sensor
-const int DO_PIN  = 2;    // Digital output of the sensor
-const int LED_PIN = 9;    // LED
+const int LDR_AO_PIN = A0; 
+const int LED_PIN = 9;    
+
+// === ADJUST SENSITIVITY HERE ===
+// The higher/lower the number, the more the sensitivity changes (Range from 0 to 1023)
+int threshold = 900; 
 
 void setup() {
-  pinMode(DO_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-
   Serial.begin(9600);
-  Serial.println("Automatic Night Light");
-  Serial.println("4-pin light sensor (AO + DO)");
-  Serial.println("----------------------------");
+  Serial.println("=== STARTING REAL-TIME LIGHT MEASUREMENT ===");
 }
 
 void loop() {
-  int analogValue  = analogRead(AO_PIN);      // 0 (bright) ~ 1023 (dark)  - may be inverted on some modules
-  int digitalValue = digitalRead(DO_PIN);     // HIGH or LOW
+  // Read specific light level value (0 - 1023)
+  int lightValue = analogRead(LDR_AO_PIN);
+  
+  Serial.print("Current light level: ");
+  Serial.print(lightValue);
 
-  Serial.print("AO: ");
-  Serial.print(analogValue);
-  Serial.print("   DO: ");
-  Serial.println(digitalValue);
-
-  // ----- Use Digital Output (recommended for beginners) -----
-  // Most MS-CDS05 modules: DO = LOW when dark (after adjusting the potentiometer)
-  // If your LED turns on when it is bright, change LOW to HIGH below.
-
-  if (digitalValue == LOW) {
-    digitalWrite(LED_PIN, HIGH);   // dark → LED ON
+  // If light crosses the threshold (you may need to change > to < depending on the module)
+  if (lightValue > threshold) { 
+    Serial.println(" ---> DARK: Turn on light!");
+    digitalWrite(LED_PIN, HIGH);
   } else {
-    digitalWrite(LED_PIN, LOW);    // bright → LED OFF
+    Serial.println(" ---> BRIGHT: Turn off light!");
+    digitalWrite(LED_PIN, LOW);
   }
-
+  
   delay(300);
 }
