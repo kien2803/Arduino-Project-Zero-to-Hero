@@ -1,64 +1,64 @@
 # 16 — RFID Door Lock (Flagship Project)
 
-Complete access-control system using almost every major module in the BanLinhKien Arduino Uno R3 RFID kit.
+A complete access-control system that combines multiple modules into one practical application.
 
 **Features**
-- Scan RFID card / keyfob
-- Authorized card → Servo opens (door unlock) + Green LED + Welcome on LCD + short beep
-- Unauthorized card → Red LED + Access Denied on LCD + long beep
-- Automatically locks again after 3 seconds
+- Scan an RFID card or key fob
+- Authorized card → servo opens (unlock) + green LED + welcome message on LCD + short beep
+- Unauthorized card → red LED + “Access Denied” on LCD + long beep
+- Door automatically locks again after a few seconds
 
-## Components used (from your kit)
+## Components
 
-| Component | Purpose |
-|-----------|---------|
-| Arduino UNO R3 | Brain |
-| RFID RC522 + Card/Tag | Identification |
-| Servo SG90 | Door lock actuator |
-| LCD1602 | User feedback |
-| Còi Chip 5V | Audio feedback |
-| LED đỏ + xanh | Visual feedback |
-| Potentiometer B10K | LCD contrast |
-| Breadboard + wires | Connections |
+| Item | Purpose |
+|------|---------|
+| Arduino Uno | Main controller |
+| RFID RC522 + cards/tags | Identification |
+| Micro Servo SG90 | Lock actuator |
+| LCD 1602 | User feedback |
+| Buzzer | Audio feedback |
+| Red & Green LEDs | Visual feedback |
+| Potentiometer 10 kΩ | LCD contrast |
+| Breadboard + jumper wires | Connections |
 
 ## Wiring Summary
 
-**RFID RC522** (3.3 V only!)
+**RFID RC522** (use 3.3 V only!)
 ```
-SDA	oD10 | SCK	oD13 | MOSI	oD11 | MISO	oD12 | RST	oD9 | 3.3V	o3.3V | GND	oGND
+SDA → D10 | SCK → D13 | MOSI → D11 | MISO → D12 | RST → D9 | 3.3V → 3.3V | GND → GND
 ```
 
 **Servo SG90**
 ```
-Signal	oD6 | VCC	o5V | GND	oGND
+Signal → D6 | VCC → 5V | GND → GND
 ```
 
-**LCD1602 (4-bit)**
+**LCD 1602 (4-bit mode)**
 ```
-RS	oD12 | E	oD11 | D4	oD5 | D5	oD4 | D6	oD3 | D7	oD2
-VSS	oGND | VDD	o5V | V0	oPot wiper | A	o5V | K	oGND | RW	oGND
+RS → D12 | E → D11 | D4 → D5 | D5 → D4 | D6 → D3 | D7 → D2
+VSS → GND | VDD → 5V | V0 → Pot wiper | A → 5V | K → GND | RW → GND
 ```
 
-**Buzzer** 	o D8 (+) / GND  
-**Green LED** 	o D7 (+ resistor)  
-**Red LED** 	o A1 (+ resistor)
+**Buzzer** → D8 (+) / GND  
+**Green LED** → D7 (with resistor)  
+**Red LED** → A1 (with resistor)
 
-## Important Setup Steps
+## Setup Steps
 
-1. First run **Project 13** to read the real UID of your card.
-2. Copy the 4-byte UID into the array `authorizedUID` in this sketch.
-3. Install libraries: **MFRC522**, **Servo** (built-in), **LiquidCrystal** (built-in).
+1. Run Project 13 first and write down the real UID of your card.
+2. Replace the example `authorizedUID` array in the sketch with your actual UID.
+3. Install the **MFRC522** library (Servo and LiquidCrystal are built-in).
 4. Upload and test.
 
-## How to add more cards
+## Adding More Cards
 
-You can expand `checkUID()` to compare against multiple stored UIDs (array of arrays) or even store them in EEPROM.
+Extend the `checkUID()` function to compare against multiple stored UIDs, or store them in EEPROM for persistence.
 
 ## Possible Upgrades
 
-- Add Keypad for PIN backup.
-- Use Relay instead of (or together with) Servo for electric lock.
-- Add master card to enroll new cards.
-- Send log via Serial or ESP32 later.
+- Add a keypad for PIN backup entry.
+- Replace or supplement the servo with a relay-driven electric lock.
+- Implement a master card that can enroll new users.
+- Log access events over Serial or to an SD card.
 
-This project is the perfect finale of the kit and a strong portfolio piece!
+This project is an excellent portfolio piece and a natural conclusion to the learning path.

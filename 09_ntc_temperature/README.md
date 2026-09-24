@@ -1,17 +1,17 @@
-# 09 — NTC Temperature Module
+# 09 — NTC Temperature Sensor
 
-Read ambient temperature using the NTC thermistor module and print it to Serial Monitor.
+Read temperature with an NTC thermistor module and print the value in Celsius.
 
 ## Description
 
-Most NTC modules in kits use a 10 kΩ thermistor + series resistor forming a voltage divider. This sketch calculates temperature with the Beta equation (simple and accurate enough for learning).
+Typical NTC modules use a 10 kΩ thermistor in a voltage divider. This sketch calculates temperature using the Beta equation, which is accurate enough for learning purposes.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module Điện Trở Nhiệt NTC | 1 |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| NTC thermistor module | 1 |
 
 ## Wiring
 
@@ -23,17 +23,15 @@ GND             --> GND
 A0 / OUT        --> A0
 ```
 
-## Notes on Calibration
+## Notes on Accuracy
 
-- The constants `BETA`, `R0`, `SERIES_R` are typical values. If readings are off by a few degrees, adjust them or compare with a real thermometer.
-- For better accuracy you can use the full Steinhart-Hart equation later.
+The constants `BETA`, `R0` and `SERIES_R` are typical values. If the reading is a few degrees off, compare with a reference thermometer and adjust the constants.
 
 ## Upload & Run
 
-Open Serial Monitor (9600). You will see temperature in °C updating every second. Touch the sensor with your finger → temperature should rise.
+Open Serial Monitor (9600 baud). Temperature updates every second. Touch the sensor with your finger and watch the value rise.
 
 ## Extensions
 
-- Display temperature on LCD1602.
-- Control Relay / fan when temperature > threshold (thermostat).
-- Log data or send via Serial to a computer.
+- Show the temperature on the LCD.
+- Control a relay or fan when temperature exceeds a threshold (simple thermostat).

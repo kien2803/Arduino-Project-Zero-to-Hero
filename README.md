@@ -1,93 +1,81 @@
 # Arduino Project Zero to Hero
 
-A curated, beginner-friendly path through classic Arduino projects — from blinking a single LED to building a complete RFID door-lock system using the **BanLinhKien Arduino Uno R3 RFID Kit**.
+A complete beginner-to-intermediate learning path for Arduino.  
+Start with simple digital outputs and finish with a full RFID access-control system.
 
-> **Status:** Active development — projects added in increasing complexity, fully matched to the components in the kit.
+> **Status:** Active — 16 self-contained projects ordered by increasing complexity.
 
 ---
 
 ## Table of Contents
 
-| # | Project | Difficulty | Core concepts / Kit parts used |
-|---|---------|------------|--------------------------------|
-| 01 | [Traffic Light](./01_traffic_light/) | 🟢 Beginner | `digitalWrite`, `delay`, sequencing |
-| 02 | [Dimmer LED (Potentiometer)](./02_dimmer_led/) | 🟢 Beginner | `analogRead`, PWM, `map()`, B10K |
-| 03 | [Piano (Buzzer + Buttons)](./03_piano/) | 🟢 Beginner | `tone()`, `INPUT_PULLUP`, Còi chip |
-| 04 | [Servo SG90](./04_servo_sg90/) | 🟢 Beginner | Servo library, position control |
-| 05 | [Stepper 28BYJ-48 + ULN2003](./05_stepper_28byj48/) | 🟡 Intermediate | Stepper library, precise rotation |
-| 06 | [LCD 1602](./06_lcd1602/) | 🟡 Intermediate | LiquidCrystal, 4-bit mode, contrast pot |
-| 07 | [Light Sensor MS-CDS05](./07_light_sensor/) | 🟢 Beginner | Analog sensor, night-light logic |
-| 08 | [Vibration Sensor SW-420](./08_vibration_sensor/) | 🟢 Beginner | Digital sensor, alarm |
-| 09 | [NTC Temperature](./09_ntc_temperature/) | 🟡 Intermediate | Thermistor, Beta equation |
-| 10 | [IR Remote + 1838T](./10_ir_remote/) | 🟡 Intermediate | IRremote library, decode buttons |
-| 11 | [Keypad 4x4](./11_keypad_4x4/) | 🟡 Intermediate | Keypad library, matrix scanning |
-| 12 | [7-Segment 1 Digit](./12_seven_segment_1digit/) | 🟡 Intermediate | Common anode, segment patterns |
-| 13 | [RFID RC522 Basic](./13_rfid_rc522/) | 🟡 Intermediate | MFRC522, SPI, read UID |
-| 14 | [Relay 1 Channel](./14_relay/) | 🟢 Beginner | Digital output, load switching |
-| 15 | [NeoPixel 12 LED](./15_neopixel/) | 🟡 Intermediate | Adafruit NeoPixel, addressable RGB |
-| 16 | [**RFID Door Lock**](./16_rfid_door_lock/) | 🔴 Flagship | RFID + Servo + LCD + Buzzer + LEDs |
+| # | Project | Level | Key Concepts |
+|---|---------|-------|--------------|
+| 01 | [Traffic Light](./01_traffic_light/) | Beginner | `digitalWrite`, `delay`, sequencing |
+| 02 | [Dimmer LED](./02_dimmer_led/) | Beginner | `analogRead`, PWM, `map()` |
+| 03 | [Piano](./03_piano/) | Beginner | `tone()`, `INPUT_PULLUP` |
+| 04 | [Servo SG90](./04_servo_sg90/) | Beginner | Servo library, position control |
+| 05 | [Stepper Motor](./05_stepper_28byj48/) | Intermediate | Stepper library, precise rotation |
+| 06 | [LCD 1602](./06_lcd1602/) | Intermediate | LiquidCrystal, 4-bit mode |
+| 07 | [Light Sensor](./07_light_sensor/) | Beginner | Analog sensor, threshold logic |
+| 08 | [Vibration Sensor](./08_vibration_sensor/) | Beginner | Digital sensor, simple alarm |
+| 09 | [NTC Temperature](./09_ntc_temperature/) | Intermediate | Thermistor, Beta equation |
+| 10 | [IR Remote](./10_ir_remote/) | Intermediate | IRremote library |
+| 11 | [Keypad 4×4](./11_keypad_4x4/) | Intermediate | Matrix keypad scanning |
+| 12 | [7-Segment Display](./12_seven_segment_1digit/) | Intermediate | Common-anode patterns |
+| 13 | [RFID RC522 Basic](./13_rfid_rc522/) | Intermediate | SPI, read UID |
+| 14 | [Relay](./14_relay/) | Beginner | Switching external loads |
+| 15 | [NeoPixel](./15_neopixel/) | Intermediate | Addressable RGB LEDs |
+| 16 | [**RFID Door Lock**](./16_rfid_door_lock/) | Flagship | Full system integration |
 
-More projects (LED Matrix, 74HC595, 4-digit 7-segment, combined systems…) coming soon.
-
----
-
-## Folder Structure
-
-```
-Arduino-Project-Zero-to-Hero/
-├── README.md
-├── 01_traffic_light/
-├── 02_dimmer_led/
-├── …
-├── 16_rfid_door_lock/
-│   ├── rfid-door-lock.ino
-│   └── README.md
-└── …
-```
-
-Each project folder is **standalone** — open its `.ino` and you are ready to upload.
+See also: **[COMPONENTS.md](./COMPONENTS.md)** — complete parts list.
 
 ---
 
-## Recommended Learning Path (with your kit)
+## Learning Path
 
-1. **Digital basics** → 01 Traffic Light, 03 Piano, 14 Relay  
-2. **Analog & PWM** → 02 Dimmer, 07 Light Sensor  
-3. **Motors** → 04 Servo, 05 Stepper  
-4. **Displays** → 06 LCD, 12 Seven-segment, 15 NeoPixel  
-5. **Sensors** → 08 Vibration, 09 NTC  
-6. **Input devices** → 10 IR Remote, 11 Keypad  
-7. **RFID foundation** → 13 RFID Basic  
-8. **Capstone** → **16 RFID Door Lock** (combines almost everything)
+```
+Digital I/O          →  01, 03, 14
+Analog & PWM         →  02, 07
+Motors               →  04, 05
+Displays             →  06, 12, 15
+Sensors              →  08, 09
+User Input           →  10, 11
+RFID Foundation      →  13
+Capstone Project     →  16  (RFID + Servo + LCD + Buzzer + LEDs)
+```
 
-After finishing project 16 you will have solid skills ready to move toward industrial automation (PLC, HMI, etc.).
+After completing project 16 you will have solid practical skills ready for more advanced topics (ESP32, IoT, industrial controllers, etc.).
 
 ---
 
 ## Getting Started
 
-1. Install [Arduino IDE](https://www.arduino.cc/en/software).
-2. Install required libraries when needed (MFRC522, Keypad, IRremote, Adafruit NeoPixel…).
-3. Select **Board: Arduino Uno** and the correct **Port**.
-4. Open any project `.ino` → Upload.
+1. Install the [Arduino IDE](https://www.arduino.cc/en/software).
+2. Connect your Arduino Uno with a USB cable.
+3. In the IDE select **Tools → Board → Arduino Uno** and the correct **Port**.
+4. Open any project folder, open the `.ino` file, and click **Upload**.
 
-Most projects run from USB power. For multiple motors or many NeoPixels consider an external 5 V supply.
+Required third-party libraries (install via Library Manager when needed):
+
+- MFRC522
+- Keypad
+- IRremote
+- Adafruit NeoPixel
 
 ---
 
-## Conventions in every project README
+## Project Structure
 
-1. Description  
-2. Components (matched to BanLinhKien kit)  
-3. Wiring (clear pin table / ASCII)  
-4. Code explanation  
-5. Upload & Run  
-6. Extensions / next ideas
+Every project folder contains:
+
+- `*.ino` — ready-to-upload sketch
+- `README.md` — description, components, wiring, explanation, and extension ideas
 
 ---
 
 ## License
 
-MIT License — feel free to fork, learn, and build cool things.
+MIT License. Feel free to fork, modify, and share.
 
-Happy making! 🚀
+Happy making!

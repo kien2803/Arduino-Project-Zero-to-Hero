@@ -1,41 +1,41 @@
-# 10 — IR Remote + Receiver (1838T)
+# 10 — IR Remote Control
 
-Receive signals from the 20-key IR remote and print the codes. Also toggles an LED.
+Receive signals from a common 38 kHz IR remote and print the button codes. Also toggles an LED.
 
 ## Description
 
-The MH-R38 / 1838T receiver works with the common 38 kHz IR remote included in the kit. This project uses the popular `IRremote` library to decode button presses.
+IR receiver modules (1838 / TSOP style) work with most inexpensive remote controls. This project uses the IRremote library to decode button presses.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module Thu Hồng Ngoại 1838T | 1 |
-| 1 | Remote Hồng Ngoại 20 Phím | 1 |
-| 1 | LED (or pin 13) | 1 |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| IR receiver module | 1 |
+| IR remote control | 1 |
+| LED (or pin 13) | 1 |
 
 ## Wiring
 
 ```
-IR Receiver 1838T     Arduino
------------------     -------
-Signal (OUT)      --> D11
-VCC               --> 5V
-GND               --> GND
+IR Receiver         Arduino
+-----------         -------
+Signal (OUT)    --> D11
+VCC             --> 5V
+GND             --> GND
 ```
 
 ## Library Installation
 
-In Arduino IDE: **Sketch → Include Library → Manage Libraries** → search **IRremote** → Install the one by **shirriff** or **ArminJo** (latest version recommended).
+In Arduino IDE go to **Sketch → Include Library → Manage Libraries**, search for **IRremote**, and install a recent version.
 
 ## Upload & Run
 
 1. Upload the sketch.
-2. Open Serial Monitor (9600).
-3. Point the remote at the receiver and press buttons. You will see HEX codes.
-4. LED on pin 13 toggles with every press.
+2. Open Serial Monitor (9600 baud).
+3. Point the remote at the receiver and press buttons. HEX codes will appear.
+4. The LED on pin 13 toggles with every press.
 
-## Next step
+## Next Steps
 
-Write down the HEX code of each button you care about, then use `if (IrReceiver.decodedIRData.decodedRawData == 0xXXXX)` to control Servo, Relay, etc.
+Record the HEX code of each useful button, then use conditional statements to control a servo, relay, or other outputs.

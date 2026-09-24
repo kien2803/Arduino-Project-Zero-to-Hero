@@ -1,17 +1,17 @@
-# 14 — Relay Mini 1 Channel 5V
+# 14 — Relay Module (1 Channel)
 
-Control the 5V relay module to switch a higher-power load (lamp, fan, solenoid, etc.).
+Control a 5 V relay to switch an external load on and off.
 
 ## Description
 
-The relay provides galvanic isolation. You can safely switch 220 V AC devices (with proper caution) or 12 V DC loads.
+A relay provides electrical isolation between the Arduino and a higher-power or higher-voltage circuit. You can switch lamps, fans, solenoids, etc.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module Relay Mini 1 Kênh 5V10A | 1 |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| 5 V relay module (1 channel) | 1 |
 
 ## Wiring
 
@@ -22,17 +22,17 @@ VCC             --> 5V
 GND             --> GND
 IN              --> D7
 
-Load side (NO / COM / NC):
-  Connect your device between COM and NO (normally open)
-  or COM and NC (normally closed)
+Load side:
+  Connect the device between COM and NO (normally open)
+  or COM and NC (normally closed).
 ```
 
-**Safety warning**: When switching mains voltage (220 V), use proper insulation, enclosure and never touch live terminals.
+**Safety warning:** When switching mains voltage (110/220 V), use proper insulation, an enclosure, and never touch live terminals.
 
-## Active High / Active Low
+## Active High vs Active Low
 
-Some modules turn the relay ON when IN is LOW, others when HIGH. If the LED behavior is inverted, just swap HIGH/LOW in the code.
+Some modules energize the relay when the IN pin is LOW, others when it is HIGH. If the behavior is inverted, simply swap HIGH and LOW in the code.
 
 ## Extensions
 
-- Control with light sensor, temperature, RFID, or IR remote.
+- Control the relay from a light sensor, temperature sensor, RFID reader, or IR remote.

@@ -1,41 +1,41 @@
-# 08 — Vibration Sensor SW-420
+# 08 — Vibration Sensor
 
-Detect shock or vibration and trigger an LED + buzzer alarm.
+Detect shock or vibration and trigger an LED plus a short beep.
 
 ## Description
 
-The SW-420 is a digital vibration/shock sensor. When it detects movement above its sensitivity threshold it changes the digital output state. This project turns on the onboard LED and beeps the chip buzzer.
+Digital vibration/shock modules (SW-420 style) change their output state when movement exceeds an adjustable threshold. This project lights an LED and activates a buzzer on detection.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module Cảm Biến Rung SW-420 | 1 |
-| 1 | Còi Chip 5V | 1 |
-| 1 | LED (or use pin 13) | 1 |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| Vibration sensor module | 1 |
+| Active / piezo buzzer | 1 |
+| LED (or use pin 13) | 1 |
 
 ## Wiring
 
 ```
-SW-420 Module       Arduino
--------------       -------
-VCC             --> 5V
-GND             --> GND
-DO              --> D2
+Vibration Module     Arduino
+----------------     -------
+VCC              --> 5V
+GND              --> GND
+DO               --> D2
 
-Buzzer +        --> D8
-Buzzer -        --> GND
+Buzzer +         --> D8
+Buzzer -         --> GND
 ```
 
-Most SW-420 modules have a potentiometer to adjust sensitivity. Turn it until the LED on the module just stays off when the board is still.
+Most modules have a small potentiometer for sensitivity adjustment. Turn it until the onboard LED stays off when the board is still.
 
 ## Upload & Run
 
-Upload, then gently tap or shake the sensor. You should see the LED light up and hear a short beep. Serial Monitor will print “Vibration detected!”.
+Upload, then gently tap or shake the sensor. The LED should light and a short beep should sound. Serial Monitor prints “Vibration detected!”.
 
 ## Extensions
 
-- Count number of vibrations.
-- Use as anti-theft alarm with RFID arm/disarm.
-- Trigger Relay to cut power or send signal.
+- Count the number of vibrations.
+- Use as a simple anti-theft alarm (arm/disarm with RFID later).
+- Trigger a relay.

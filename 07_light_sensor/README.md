@@ -1,19 +1,19 @@
-# 07 — Light Sensor (MS-CDS05)
+# 07 — Light Sensor
 
-Read ambient light level with the photoresistor module and control an LED accordingly.
+Read ambient light level and control an LED accordingly (automatic night light).
 
 ## Description
 
-The MS-CDS05 module outputs an analog voltage proportional to light intensity. This project maps the reading to LED brightness (acts as an automatic night light) and also prints values to Serial Monitor.
+A photoresistor / LDR module outputs an analog voltage proportional to light intensity. This sketch maps the reading to LED brightness so the LED becomes brighter when the surroundings are darker.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module Cảm Biến Ánh Sáng MS-CDS05 | 1 |
-| 1 | LED 5mm + 220Ω resistor | 1 |
-| — | Jumper wires |  |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| Light sensor module (analog output) | 1 |
+| LED + 220 Ω resistor | 1 |
+| Jumper wires |  |
 
 ## Wiring
 
@@ -22,24 +22,22 @@ Light Sensor Module     Arduino
 -------------------     -------
 VCC                 --> 5V
 GND                 --> GND
-A0 (or OUT)         --> A0
+A0 / OUT            --> A0
 
-LED anode --> 220Ω --> D9
+LED anode --> 220 Ω --> D9
 LED cathode ---------> GND
 ```
 
-> Some modules have both digital (DO) and analog (AO) pins. Use the analog pin for this sketch.
-
 ## How It Works
 
-- `analogRead(A0)` returns 0–1023.
-- `map(..., 255, 0)` inverts the value so the LED gets brighter when the environment is darker.
+- `analogRead(A0)` returns a value between 0 and 1023.
+- `map(..., 255, 0)` inverts the value so lower light produces higher PWM duty cycle.
 
 ## Upload & Run
 
-Open Serial Monitor at 9600 baud. Cover the sensor with your hand → LED should brighten. Shine a light → LED dims.
+Open Serial Monitor at 9600 baud. Cover the sensor → LED brightens. Shine a light on it → LED dims.
 
 ## Extensions
 
-- Add threshold to trigger Relay or Buzzer.
-- Combine with LCD to show “Light Level: xxx”.
+- Add a threshold to trigger a relay or buzzer.
+- Display the light level on the LCD.

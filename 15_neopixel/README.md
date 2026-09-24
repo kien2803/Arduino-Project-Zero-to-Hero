@@ -1,17 +1,17 @@
-# 15 — NeoPixel 12 LED RGB
+# 15 — NeoPixel (12 LED RGB)
 
-Drive the 12-LED NeoPixel (WS2812) module with colorful effects.
+Drive a 12-LED NeoPixel (WS2812) module with simple color effects.
 
 ## Description
 
-NeoPixels are individually addressable RGB LEDs. Only one data pin is needed for the whole chain.
+NeoPixels are individually addressable RGB LEDs. Only one data pin is required for the entire chain.
 
-## Components (from kit)
+## Components
 
-| # | Component | Qty |
-|---|-----------|-----|
-| 1 | Arduino UNO R3 | 1 |
-| 1 | Module LED Neo Pixel 12 LED RGB | 1 |
+| Item | Qty |
+|------|-----|
+| Arduino Uno | 1 |
+| NeoPixel / WS2812 module (12 LEDs) | 1 |
 
 ## Wiring
 
@@ -19,18 +19,18 @@ NeoPixels are individually addressable RGB LEDs. Only one data pin is needed for
 NeoPixel Module     Arduino
 ---------------     -------
 DIN / Data      --> D6
-VCC / +5V       --> 5V   (for 12 LEDs OK from Arduino; more LEDs need external supply)
+VCC / +5V       --> 5V
 GND             --> GND
 ```
 
 ## Library
 
-Install **Adafruit NeoPixel** via Library Manager.
+Install **Adafruit NeoPixel** via the Library Manager.
 
-## Power note
+## Power Note
 
-12 LEDs at full white brightness can draw ~720 mA. The sketch limits brightness to 50. For longer strips always use external 5 V power supply and common ground.
+Twelve LEDs at full white brightness can draw several hundred milliamps. The example limits brightness to a safe level. For longer strips always use an external 5 V supply and connect the grounds together.
 
 ## Upload & Run
 
-You will see red → green → blue color wipes. Modify the `loop()` to create your own patterns.
+You will see sequential red, green, and blue color wipes. Modify the `loop()` function to create your own patterns.
