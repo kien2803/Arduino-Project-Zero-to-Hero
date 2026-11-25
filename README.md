@@ -54,6 +54,24 @@ Required libraries (install via Library Manager when needed):
 
 ---
 
+## Flashing without the Arduino IDE
+
+`flash.sh` is a terminal picker — run it, choose a lesson, it compiles and uploads:
+
+```bash
+./flash.sh            # interactive menu (uses fzf if installed)
+./flash.sh 03_piano   # flash a specific lesson directly
+```
+
+Requirements on the flashing machine:
+
+- `avrdude` (`sudo dnf install avrdude` / `sudo apt install avrdude`). If `arduino-cli` is installed, its bundled avrdude is used automatically.
+- `platformio` (`pip install --user platformio`) to compile sketches at flash time. Without it, the prebuilt `build/*.hex` files are flashed instead — rebuild them any time with `./build.sh`.
+
+The board is auto-detected on `/dev/ttyACM*` or `/dev/ttyUSB*` (override with `PORT=/dev/ttyXXX`). If you get a permission error on the port: `sudo usermod -aG dialout $USER`, then log out and back in.
+
+---
+
 ## License
 
 MIT License. Fork it, improve it, share it.
