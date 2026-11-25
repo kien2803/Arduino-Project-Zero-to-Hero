@@ -70,13 +70,19 @@ def find_avrdude():
 
 
 def list_ports():
-    """Return [(device, description)]."""
+    """Return [(device, description)], real USB-serial devices first.
+
+    pyserial lists phantom onboard /dev/ttyS* UARTs too — those are filtered
+    out unless nothing else exists (then we show everything)."""
     try:
         from serial.tools import list_ports as lp
-        return [(p.device, p.description or p.device) for p in lp.comports()]
+        ports = [(p.device, p.description or p.device) for p in lp.comports()]
     except ImportError:
         devs = sorted(glob.glob("/dev/ttyACM*") + glob.glob("/dev/ttyUSB*"))
-        return [(d, d) for d in devs]
+        ports = [(d, d) for d in devs]
+    real = [p for p in ports
+            if "ttyS" not in p[0].rsplit("/", 1)[-1] or "ttyACM" in p[0] or "ttyUSB" in p[0]]
+    return real or ports
 
 
 def parse_hex(path):
@@ -184,10 +190,12 @@ def flash(port, hexfile, log):
 
 # ---------------------------------------------------------------- GUI
 
-def run_gui():
+def run_gui(ontop=False):
     root = tk.Tk()
     root.title("Arduino Zero→Hero — Lesson Flasher")
     root.minsize(520, 480)
+    if ontop:
+        root.attributes("-topmost", True)
     q = queue.Queue()
 
     def log(msg):
@@ -332,11 +340,12 @@ def main():
     ap.add_argument("lesson", nargs="?", help="lesson dir like 03_piano")
     ap.add_argument("--cli", action="store_true", help="run without GUI")
     ap.add_argument("--port", help="serial port, e.g. /dev/ttyACM0")
+    ap.add_argument("--ontop", action="store_true", help="keep window on top")
     args = ap.parse_args()
     if args.cli or tk is None or not os.environ.get("DISPLAY"):
         run_cli(args.lesson, args.port)
     else:
-        run_gui()
+        run_gui(args.ontop)
 
 
 if __name__ == "__main__":
