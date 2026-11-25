@@ -56,7 +56,28 @@ Required libraries (install via Library Manager when needed):
 
 ## Flashing without the Arduino IDE
 
-`flash.sh` is a terminal picker — run it, choose a lesson, it compiles and uploads:
+### Option 1 — GUI app (easiest, download & run)
+
+Grab `arduino-flasher` from [Releases](../../releases), then:
+
+```bash
+chmod +x arduino-flasher
+./arduino-flasher
+```
+
+Pick a lesson → pick the board port → **Upload**. The binary bundles the
+prebuilt hex files, avrdude, and a pure-Python uploader — nothing else to
+install. (Linux x86_64. One-time step if you get a port permission error:
+`sudo usermod -aG dialout $USER`, then log out/in.)
+
+### Option 2 — `flasher.py` from this repo
+
+```bash
+./flasher.py            # GUI (needs python3-tkinter + pyserial)
+./flasher.py --cli      # terminal menu instead
+```
+
+### Option 3 — `flash.sh` terminal picker
 
 ```bash
 ./flash.sh            # interactive menu (uses fzf if installed)

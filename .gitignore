@@ -1,1 +1,4 @@
 .pio/
+dist/
+*.spec
+__pycache__/
