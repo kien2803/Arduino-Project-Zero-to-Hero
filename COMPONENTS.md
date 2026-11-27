@@ -39,3 +39,18 @@ You do not need every part for every project.
 - Extra LEDs and resistors
 
 **Important:** The RFID RC522 module must be powered from **3.3 V** only.
+
+## Phase 2/3 preview — robotics parts
+
+For the designed Phase 2 (robotics fundamentals) and Phase 3
+(intelligent robotics) projects in [ROADMAP.md](./ROADMAP.md), plan on:
+
+| Item | Used in |
+|------|---------|
+| 2WD robot chassis + 2 DC gear motors + wheels | 15–22 |
+| TB6612 or L298N motor driver | 13–22 |
+| 2× TCRT5000 IR line sensors | 15, 19 |
+| HC-SR04 ultrasonic | 14, 20, 21 |
+| Wheel encoders (slot disc or hall) | 16, 18, 21 |
+| MPU6050 IMU (I²C) | 21 |
+| Battery pack (4×AA or 18650 + holder) — motors need their own supply | 17–22 |

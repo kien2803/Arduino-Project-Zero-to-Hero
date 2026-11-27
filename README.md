@@ -1,13 +1,13 @@
 # Arduino Project Zero to Hero
 
-A practical learning path that turns everyday objects into simple Arduino projects.  
-Start with a traffic light and finish with a complete smart door lock — all built from common kit parts.
+A structured embedded curriculum that goes from blinking an LED to autonomous robotics.  
+**Phase 1** (this repo): 11 Arduino projects from a traffic light to a complete smart door lock.
 
 > **Philosophy:** Real products first. Theory follows naturally.
 
 ---
 
-## Project Roadmap (Easy → Hard)
+## Phase 1 — Arduino Fundamentals (Easy → Hard)
 
 | # | Project | Real-life product | Difficulty | Main skills |
 |---|---------|-------------------|------------|-------------|
@@ -23,7 +23,12 @@ Start with a traffic light and finish with a complete smart door lock — all bu
 | 10 | [RFID Access Control](./10_rfid_access/) | Card access system | 🔶 Medium-Hard | RFID, UID checking |
 | 11 | [Smart Door Lock](./11_smart_door_lock/) | Full smart lock (RFID + Keypad + LCD + Servo) | 🔴 Hard | System integration |
 
-See **[COMPONENTS.md](./COMPONENTS.md)** for the recommended parts list.
+**Phase 2 — Robotics Fundamentals** and **Phase 3 — Intelligent
+Robotics** (DC motors, line tracking, encoders, PID, sensor fusion) are
+designed in **[ROADMAP.md](./ROADMAP.md)**.
+
+See **[COMPONENTS.md](./COMPONENTS.md)** for the parts list and
+**[docs/](./docs/)** for library versions + simulation notes.
 
 ---
 
@@ -45,12 +50,9 @@ By the end of project 11 you will have built a complete access-control system an
 2. Connect your Arduino Uno.
 3. Open any project folder → open the `.ino` file → Upload.
 
-Required libraries (install via Library Manager when needed):
-- MFRC522
-- Keypad
-- IRremote
-- Servo (built-in)
-- LiquidCrystal (built-in)
+Required libraries (install via Library Manager — see [docs/LIBRARIES.md](./docs/LIBRARIES.md) for tested versions):
+- MFRC522, Keypad, IRremote (≥ 4.x)
+- Servo, LiquidCrystal (built-in in the IDE; registry packages on PlatformIO)
 
 ---
 

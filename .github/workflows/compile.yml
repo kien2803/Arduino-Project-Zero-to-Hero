@@ -1,0 +1,28 @@
+name: Compile sketches
+
+on:
+  push:
+    branches: [main, improve]
+  pull_request:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Compile all 11 sketches
+        # build.sh runs `pio ci` per sketch with lib_deps from
+        # platformio.ini and drops a hex into build/<lesson>.hex.
+        # It exits non-zero if any sketch fails.
+        run: ./build.sh
+
+      - name: Show built hexes
+        run: ls -la build/*.hex
