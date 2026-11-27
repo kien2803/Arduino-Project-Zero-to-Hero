@@ -17,8 +17,10 @@ knowledge:
   - name: lint
     contents: |
       Sketches are "linted" by compiling with all warnings enabled:
-        arduino-cli compile --fqbn arduino:avr:uno --warnings all 01_traffic_light
-      (sketch .ino filenames match their folders, so dirs compile directly)
+        mkdir -p /tmp/lint_sketch && cp 01_traffic_light/traffic-light.ino /tmp/lint_sketch/lint_sketch.ino
+        arduino-cli compile --fqbn arduino:avr:uno --warnings all /tmp/lint_sketch
+      (arduino-cli requires the .ino name to match its folder, so copy to a
+      temp dir named after the sketch — repo sketch names differ from dirs)
   - name: test
     contents: |
       No unit-test harness — the repo's check is compile-verifying every sketch
@@ -26,8 +28,11 @@ knowledge:
 
         fail=0
         for d in [0-9]*/; do
+          lesson=$(basename "$d")
+          sk=/tmp/sk_$lesson; mkdir -p "$sk"
+          cp "$d"/*.ino "$sk/$lesson.ino"
           echo "== $d"
-          arduino-cli compile --fqbn arduino:avr:uno "$d" || fail=1
+          arduino-cli compile --fqbn arduino:avr:uno "$sk" || fail=1
         done
         exit $fail
       (equivalently: ./build.sh rebuilds build/*.hex for all sketches)

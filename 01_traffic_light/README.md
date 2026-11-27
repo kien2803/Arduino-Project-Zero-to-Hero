@@ -85,7 +85,7 @@ nothing else. Later projects replace it with `millis()` timing.
 
 ## Upload & test
 
-1. Upload `01_traffic_light.ino` (Arduino IDE, `./flash.sh`, or the
+1. Upload `traffic-light.ino` (Arduino IDE, `./flash.sh`, or the
    [flasher app](../README.md#flashing-without-the-arduino-ide)).
 2. The LEDs cycle red → green → yellow forever, no Serial needed.
 3. Change `RED_MS`/`GREEN_MS`/`YELLOW_MS`, re-upload, observe the change.

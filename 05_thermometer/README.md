@@ -77,7 +77,7 @@ every second:
 
 ## Upload & test
 
-1. Upload `05_thermometer.ino`, open Serial Monitor at 9600.
+1. Upload `thermometer.ino`, open Serial Monitor at 9600.
 2. Readings update once per second in °C.
 3. Pinch the sensor — temperature climbs a few degrees.
 4. Unplug A0 (open) → you should see the `ADC=1023` error, not NaN.

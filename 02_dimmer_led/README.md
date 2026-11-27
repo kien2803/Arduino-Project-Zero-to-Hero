@@ -78,7 +78,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `02_dimmer_led.ino`.
+1. Upload `dimmer-led.ino`.
 2. Turn the pot slowly — brightness tracks the knob in real time.
 3. Optional: add `Serial.begin(9600)` + `Serial.println(brightness)` to
    watch the raw values (see the Challenges).

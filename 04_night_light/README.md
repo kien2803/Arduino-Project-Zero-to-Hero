@@ -79,7 +79,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `04_night_light.ino`, open Serial Monitor at 9600.
+1. Upload `night-light.ino`, open Serial Monitor at 9600.
 2. Watch the numbers in normal room light — write down the typical value.
 3. Cover the sensor — the number should jump past `threshold` → LED on.
 4. **Calibrate:** set `threshold` a bit above your room's "bright" value

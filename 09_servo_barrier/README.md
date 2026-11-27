@@ -77,7 +77,7 @@ stateDiagram-v2
 
 ## Upload & test
 
-1. Upload `09_servo_barrier.ino`, Serial at 9600 (optional).
+1. Upload `servo-barrier.ino`, Serial at 9600 (optional).
 2. Arm starts low (closed). Press → rises, prints `OPEN`.
 3. ~4 s later → lowers, prints `CLOSED`.
 4. Press *while open* → ignored (state is OPEN) — clean, predictable.

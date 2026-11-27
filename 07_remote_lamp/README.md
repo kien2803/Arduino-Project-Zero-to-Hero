@@ -81,7 +81,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `07_remote_lamp.ino`, open Serial Monitor.
+1. Upload `remote-lamp.ino`, open Serial Monitor.
 2. Press remote buttons — each real press prints its command code.
 3. Copy your chosen button's code into `CMD_POWER`, re-upload.
 4. Press that button → relay clicks ON; press again → OFF.

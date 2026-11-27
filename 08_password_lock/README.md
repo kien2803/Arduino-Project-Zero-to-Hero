@@ -81,7 +81,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `08_password_lock.ino`, Serial at 9600.
+1. Upload `password-lock.ino`, Serial at 9600.
 2. Type `1234` then `#` → `ACCESS GRANTED` + LED ~1.5 s + beep.
 3. Wrong code + `#` → `WRONG PASSWORD` + long low beep.
 4. `*` clears mid-typing. Change `password` in code and re-test.

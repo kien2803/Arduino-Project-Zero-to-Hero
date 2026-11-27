@@ -88,7 +88,7 @@ Transitions happen on card tap; the *exit* from GRANTED/DENIED is pure
 
 ## Upload & test
 
-1. Upload `11_smart_door_lock.ino`, Serial at 9600.
+1. Upload `smart-door-lock.ino`, Serial at 9600.
 2. LCD shows `SMART DOOR LOCK` / `Tap your card`. Adjust the contrast
    pot until text is crisp.
 3. Tap an unknown card → `ACCESS DENIED` + red LED ~1.5 s → back to idle.

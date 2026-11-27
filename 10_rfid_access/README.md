@@ -81,7 +81,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `10_rfid_access.ino`, Serial at 9600.
+1. Upload `rfid-access.ino`, Serial at 9600.
 2. Tap your card → Serial prints its UID. If unknown: `ACCESS DENIED`.
 3. Copy that printed UID into `ALLOWED_UID`, re-upload.
 4. Tap again → `ACCESS GRANTED`, relay + LED for the window.

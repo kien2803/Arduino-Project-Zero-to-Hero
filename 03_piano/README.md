@@ -78,7 +78,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `03_piano.ino`.
+1. Upload `piano.ino`.
 2. Press each button — its note sounds while held, stops on release.
 3. Press two buttons at once — only the *first* in the chain plays.
    (Why? See Knowledge check.)

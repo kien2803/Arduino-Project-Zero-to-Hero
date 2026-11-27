@@ -75,7 +75,7 @@ loop forever:
 
 ## Upload & test
 
-1. Upload `06_anti_theft_alarm.ino`, Serial at 9600 (optional).
+1. Upload `anti-theft-alarm.ino`, Serial at 9600 (optional).
 2. Tap the sensor lightly → beep + LED on ~1.5 s + console message.
 3. Tap repeatedly → each tap re-arms the window; LED stays on continuously.
 4. Desk still → LED off, no messages.

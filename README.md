@@ -46,9 +46,12 @@ By the end of project 11 you will have built a complete access-control system an
 
 ## Getting Started
 
-1. Install the [Arduino IDE](https://www.arduino.cc/en/software).
-2. Connect your Arduino Uno.
-3. Open any project folder → open the `.ino` file → Upload.
+1. Connect your Arduino Uno.
+2. Flash a lesson — easiest is the `arduino-flasher` app from
+   [Releases](../../releases) (see *Flashing without the Arduino IDE* below),
+   or `./flash.sh`.
+3. To edit a sketch, open the `.ino` in any editor (Arduino IDE also works —
+   it will offer to rename the file into a matching folder; that's fine).
 
 Required libraries (install via Library Manager — see [docs/LIBRARIES.md](./docs/LIBRARIES.md) for tested versions):
 - MFRC522, Keypad, IRremote (≥ 4.x)
