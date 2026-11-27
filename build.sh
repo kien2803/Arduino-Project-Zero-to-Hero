@@ -30,12 +30,7 @@ for ino in */*.ino; do
       cp "$(find "$tmp/out" -name firmware.hex | head -1)" "build/$lesson.hex"
       ;;
     arduino-cli)
-      name=$(basename "$ino" .ino)
-      mkdir -p "$tmp/$name"
-      cp "$ino" "$tmp/$name/$name.ino"
-      find "$dir" -maxdepth 1 \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' \) \
-        -exec cp {} "$tmp/$name/" \;
-      arduino-cli compile --fqbn arduino:avr:uno --output-dir "$tmp/out" "$tmp/$name" >/dev/null
+      arduino-cli compile --fqbn arduino:avr:uno --output-dir "$tmp/out" "$dir" >/dev/null
       cp "$tmp/out"/*.hex "build/$lesson.hex"
       ;;
   esac

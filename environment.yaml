@@ -16,40 +16,21 @@ maintenance:
 knowledge:
   - name: lint
     contents: |
-      Sketches are "linted" by compiling with all warnings enabled.
-      NOTE: arduino-cli requires the .ino filename to match its folder name,
-      which this repo does not follow, so compile via a temp dir:
-
-        compile_sketch() {
-          local ino="$1" name tmp
-          name=$(basename "$ino" .ino)
-          tmp=$(mktemp -d)
-          mkdir -p "$tmp/$name"
-          cp "$ino" "$tmp/$name/$name.ino"
-          find "$(dirname "$ino")" -maxdepth 1 \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' \) -exec cp {} "$tmp/$name/" \;
-          arduino-cli compile --fqbn arduino:avr:uno --warnings all "$tmp/$name"
-          local rc=$?
-          rm -rf "$tmp"
-          return $rc
-        }
-        compile_sketch 01_traffic_light/traffic-light.ino
+      Sketches are "linted" by compiling with all warnings enabled:
+        arduino-cli compile --fqbn arduino:avr:uno --warnings all 01_traffic_light
+      (sketch .ino filenames match their folders, so dirs compile directly)
   - name: test
     contents: |
       No unit-test harness — the repo's check is compile-verifying every sketch
       for the Arduino Uno (arduino:avr:uno) target:
 
         fail=0
-        for ino in */*.ino; do
-          name=$(basename "$ino" .ino)
-          tmp=$(mktemp -d)
-          mkdir -p "$tmp/$name"
-          cp "$ino" "$tmp/$name/$name.ino"
-          find "$(dirname "$ino")" -maxdepth 1 \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' \) -exec cp {} "$tmp/$name/" \;
-          echo "== $ino"
-          arduino-cli compile --fqbn arduino:avr:uno "$tmp/$name" || fail=1
-          rm -rf "$tmp"
+        for d in [0-9]*/; do
+          echo "== $d"
+          arduino-cli compile --fqbn arduino:avr:uno "$d" || fail=1
         done
         exit $fail
+      (equivalently: ./build.sh rebuilds build/*.hex for all sketches)
   - name: startup
     contents: |
       Nothing to launch: this repo is a collection of Arduino Uno sketches (.ino),
