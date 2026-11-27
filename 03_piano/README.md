@@ -1,110 +1,112 @@
-# 03 — Piano (Buzzer + Pushbuttons)
+# 03 — Mini Piano (Buzzer + Pushbuttons)
 
-Simple 4-key piano using pushbuttons and a buzzer.
+Four buttons, four notes — the same idea as a toy piano or a doorbell
+with selectable chimes.
 
-## Description
+## Real-world problem
 
-Four pushbuttons (wired with internal pull-up resistors) each trigger a specific musical note on a buzzer. When a button is pressed (active LOW), the Arduino generates a tone at the corresponding frequency using the `tone()` function.
+Doorbells, toy pianos, and microwave keypads all map "button → sound".
+This project builds that mapping: each button plays a musical note on a
+piezo buzzer while held.
+
+## Learning objectives
+
+- Read pushbuttons with `INPUT_PULLUP` (active-LOW logic)
+- Generate tones with `tone()` / `noTone()`
+- Understand why only one button can win in an `else if` chain
+- Map physical inputs to frequencies (Hz)
+
+## Prerequisites
+
+Project 01 (digital I/O basics).
 
 ## Components
 
-| # | Component | Qty | Notes |
-|---|-----------|-----|-------|
-| 1 | Arduino Uno / Nano | 1 | Or any ATmega328P-based board |
-| 1 | Buzzer | 1 | Passive buzzer (piezo) |
-| 1 | Pushbutton | 4 | Momentary tactile switches |
-| — | Breadboard + jumper wires | 1 set | |
+| Qty | Component | Notes |
+|----:|-----------|-------|
+| 1 | Arduino Uno / Nano | |
+| 1 | Passive buzzer (piezo) | **Not** an active buzzer — see notes |
+| 4 | Pushbuttons | Momentary tactile switches |
+| — | Breadboard + jumper wires | |
+
+> **Passive vs active buzzer:** an *active* buzzer makes its own tone when
+> powered — `tone()` can't change its pitch. A *passive* buzzer is just a
+> speaker — the Arduino must generate the waveform. You need passive here.
 
 ## Wiring
 
 ```
-                +5V
-                 |
-  Pin 2 (Arduino) ----[BUTTON]---- GND
-  Pin 3 (Arduino) ----[BUTTON]---- GND
-  Pin 4 (Arduino) ----[BUTTON]---- GND
-  Pin 5 (Arduino) ----[BUTTON]---- GND
+  D2 ----[BUTTON]---- GND      (Do)
+  D3 ----[BUTTON]---- GND      (Re)
+  D4 ----[BUTTON]---- GND      (Mi)
+  D5 ----[BUTTON]---- GND      (Sol)
 
-  Pin 9 (Arduino) ----> BUZZER ----> GND
+  D9 ----> BUZZER+ ----> GND
 ```
 
-- **Pushbuttons**: one pin to digital pins `2`, `3`, `4`, `5`; the other pin to `GND`. The internal `INPUT_PULLUP` resistor keeps the pin HIGH when the button is open; pressing pulls it LOW.
-- **Buzzer**: positive pin to `D9`, negative pin to `GND`. Use a passive buzzer (not active) for variable frequency control.
+| Button | Pin | Note | Frequency |
+|--------|-----|------|-----------|
+| Do | D2 | C4 | 262 Hz |
+| Re | D3 | D4 | 294 Hz |
+| Mi | D4 | E4 | 330 Hz |
+| Sol | D5 | G4 | 392 Hz |
+| Buzzer | D9 | — | — |
 
-> Pin `9` on Arduino Uno supports `tone()` for frequency generation.
+Buttons use the internal `INPUT_PULLUP` resistor — **no external
+resistors needed**. Idle pin = HIGH; pressed pin = LOW.
 
-## Code (`piano.ino`)
+> **Simulation:** runs as-is in Wokwi/Tinkercad (piezo supported).
 
-```cpp
-int buzzerPin = 9;
+## How it works
 
-int Do  = 2; 
-int Re  = 3; 
-int Mi  = 4; 
-int Sol = 5;
+1. `INPUT_PULLUP` holds each button pin at 5 V through ~20–50 kΩ.
+2. Pressing connects the pin straight to GND → reads `LOW` (active-LOW).
+3. `tone(buzzerPin, freq)` outputs a square wave at that frequency.
+4. The `else if` chain picks the **first** pressed button; with nothing
+   pressed, `noTone()` silences the buzzer.
 
-void setup() {
-  pinMode(buzzerPin, OUTPUT);
-  
-  pinMode(Do, INPUT_PULLUP);
-  pinMode(Re, INPUT_PULLUP);
-  pinMode(Mi, INPUT_PULLUP);
-  pinMode(Sol, INPUT_PULLUP);
-}
+## The algorithm
 
-void loop() {
-  if (digitalRead(Do) == LOW) {
-    tone(buzzerPin, 262); 
-  } 
-  else if (digitalRead(Re) == LOW) {
-    tone(buzzerPin, 294); 
-  } 
-  else if (digitalRead(Mi) == LOW) {
-    tone(buzzerPin, 330); 
-  } 
-  else if (digitalRead(Sol) == LOW) {
-    tone(buzzerPin, 392); 
-  }
-  else {
-    noTone(buzzerPin);   
-  }
-}
+```
+loop forever:
+    if      Do  pressed → tone(262)
+    else if Re  pressed → tone(294)
+    else if Mi  pressed → tone(330)
+    else if Sol pressed → tone(392)
+    else                → noTone()
 ```
 
-## How It Works
+## Upload & test
 
-1. `INPUT_PULLUP` enables the internal ~20 kΩ pull-up resistor on each button pin, keeping the pin at `HIGH` when the button is not pressed.
-2. Pressing a button connects the pin to `GND`, pulling it to `LOW` (active LOW logic).
-3. `digitalRead()` checks each button; when a button is LOW, `tone(buzzerPin, frequency)` generates a square wave at the specified frequency.
-4. `noTone()` stops the tone when no button is pressed.
-5. `loop()` runs continuously, so the piano responds in real time to button presses.
+1. Upload `03_piano.ino`.
+2. Press each button — its note sounds while held, stops on release.
+3. Press two buttons at once — only the *first* in the chain plays.
+   (Why? See Knowledge check.)
 
-| Note | Frequency (Hz) | Musical Note |
-|------|----------------|--------------|
-| Do   | 262            | C4           |
-| Re   | 294            | D4           |
-| Mi   | 330            | E4           |
-| Sol  | 392            | G4           |
+## Troubleshooting
 
-```mermaid
-flowchart LR
-  BTN["Buttons<br/>D2, D3, D4, D5"] -->|digitalRead<br/>LOW when pressed| MCU{{"Arduino"}}
-  MCU -->|tone<br/>262–392 Hz| BUZ["Buzzer<br/>D9"]
-  BUZ --> GND[("GND")]
-  BTN --> GND
-```
+| Symptom | Likely cause |
+|---|---|
+| Buzzer silent | Active buzzer instead of passive; or +/- swapped |
+| Note keeps playing after release | Button wired to 5V instead of GND (need pull-DOWN) — rewire to GND |
+| Random triggering | `INPUT` used instead of `INPUT_PULLUP` — floating pin |
+| Wrong button plays | Buttons mapped to different pins than the table |
 
-## Uploading
+## Challenges
 
-1. Open Arduino IDE and install the **Arduino Uno** board (or your board's core).
-2. Select the correct COM port under **Tools → Port**.
-3. Open `piano.ino` and click **Upload** (Ctrl+U).
-4. Press the buttons to play notes.
+- **Beginner:** add a 5th note (Fa 349 Hz on D6, La 440 Hz on D7) for a full pentatonic scale.
+- **Intermediate:** store pins+notes in arrays and loop over them instead of the `else if` chain — adding a note becomes a one-line change.
+- **Advanced:** play a melody: `int notes[] = {262,294,330,...}; int beats[] = {4,4,8,...};` + `tone(pin, notes[i], beat)` — a song player.
 
-## Possible Improvements
+## Knowledge check
 
-- **More notes**: add more buttons and frequencies for a full octave.
-- **Debouncing**: add a small delay or hardware debouncing capacitor to prevent multiple triggers from a single press.
-- **Polyphony**: use multiple buzzer pins or a shift register to play multiple notes simultaneously.
-- **Volume control**: add a potentiometer to control buzzer volume (requires PWM or a transistor circuit).
-- **Song playback**: pre-program a melody array and play it automatically.
+1. Why do the buttons read `LOW` when pressed instead of `HIGH`?
+2. What removes the need for an external pull-up resistor per button?
+3. Pressing Do and Sol together plays only Do — which language feature causes that?
+4. Why can't `tone()` control an *active* buzzer's pitch?
+
+## Safety notes
+
+- Buttons connect pins directly to GND — that's fine **because** the pins
+  are inputs with pull-ups. Never wire a button between a pin configured
+  `OUTPUT`/`HIGH` and GND.

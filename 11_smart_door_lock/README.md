@@ -1,55 +1,127 @@
-# 11 — Smart Door Lock (Flagship Project)
+# 11 — Smart Door Lock (RFID + LCD + Servo)
 
-A complete smart door lock that feels like a real commercial product.
+The capstone: an RC522 card reader, LCD status display, and servo
+"lock" — full grant/deny flow with a 3-state machine.
 
-## What it does
+## Real-world problem
 
-- Shows “Scan card…” on the LCD.
-- Authorized RFID card → green LED + short beep + “Access Granted” + servo unlocks for 3.5 seconds, then locks again.
-- Unknown card → red LED + long beep + “Access Denied”.
+A door lock merges an RFID reader (project 10), a status display, and an
+actuator. It must show IDLE → GRANTED/DENIED → back to IDLE, keep timing
+non-blocking, and survive the course's first real **pin conflict**: the
+LCD and RC522 both wanted the SPI pins.
 
-This combines almost every skill you learned in the previous projects into one useful device.
+## Learning objectives
+
+- Combine three peripherals: SPI RC522, parallel LCD, and a servo
+- Resolve a **bus conflict** — move the LCD off D11/D12 so SPI stays free
+- Model the whole system as `IDLE → GRANTED|DENIED → IDLE`
+- Separate state transitions from the timed actions that own them
+
+## Prerequisites
+
+Project 10 (RFID + SPI + non-blocking timing). LCD basics help.
 
 ## Components
 
-| Item | Purpose |
-|------|---------|
-| Arduino Uno | Controller |
-| RFID RC522 + cards | Identification |
-| Micro Servo SG90 | Mechanical lock |
-| LCD 1602 | User interface |
-| Buzzer | Sound feedback |
-| Red & Green LEDs | Visual feedback |
-| 10 kΩ potentiometer | LCD contrast |
-| Breadboard + wires | |
+| Qty | Component | Notes |
+|----:|-----------|-------|
+| 1 | Arduino Uno | |
+| 1 | RFID-RC522 + card | 3.3 V, SPI |
+| 1 | LCD 1602 + 10 kΩ pot (contrast) | |
+| 1 | Micro Servo SG90 | Lock bolt |
+| 2 | LEDs + resistors | Grant (green) / deny (red) — optional |
 
-## Wiring Overview
+## Wiring
 
-**RFID RC522** (3.3 V only)
 ```
-SDA	oD10  SCK	oD13  MOSI	oD11  MISO	oD12  RST	oD9  3.3V	o3.3V  GND	oGND
+RC522               Arduino           LCD               Arduino
+-----               -------           ---               -------
+SDA (SS)        --> D10               RS            --> A2      ← moved off D12!
+SCK             --> D13               E             --> A3      ← moved off D11!
+MOSI            --> D11               D4–D7         --> D4 D5 D6 D7
+MISO            --> D12               VSS,RW,K      --> GND
+RST             --> D9                VDD,A         --> 5V
+3.3V            --> 3.3V              VO            --> pot wiper
+GND             --> GND               pot ends      --> 5V / GND
+
+Servo:  signal --> D8,  VCC --> 5V,  GND --> GND
+LEDs:   D2 = grant (green), D3 = deny (red), each through 220 Ω
 ```
 
-**Servo** → D6 (signal), 5V, GND  
-**LCD** (4-bit) → RS=D12, E=D11, D4=D5, D5=D4, D6=D3, D7=D2  
-**Buzzer** → D8  
-**Green LED** → D7  
-**Red LED** → A1
+| Signal | Pin | Note |
+|--------|-----|------|
+| RC522 SS/SCK/MOSI/MISO | D10/13/11/12 | SPI bus |
+| RC522 RST | D9 | |
+| LCD RS / E | **A2 / A3** | **freed from SPI pins** |
+| LCD D4–D7 | D4–D7 | |
+| Servo / grant / deny | D8 / D2 / D3 | |
 
-## Setup
+> **Why the LCD moved:** RS/E sat on D12/D11 = SPI MISO/MOSI. Two
+> outputs driving the same pins corrupts every SPI transfer. The LCD
+> is a plain digital part — it works fine on the analog pins (A2/A3 are
+> just GPIOs here).
 
-1. First run Project 10 and copy your real card UID.
-2. Paste it into the `authorizedUID` array.
-3. Install library **MFRC522**.
-4. Upload and test.
+## Libraries
 
-## Why this project matters
+**MFRC522** (1.4.12+), **Servo**, **LiquidCrystal** — see `platformio.ini`.
 
-You just built the same core logic that appears in hotel locks, office access systems, and many smart home products — only simplified so you can understand every line of code.
+## How it works
 
-## Possible next steps
+```
+State machine (non-blocking — no delay() anywhere):
 
-- Add keypad as backup PIN entry.
-- Store multiple cards in EEPROM.
-- Add a master card that can enroll new users.
-- Log access times via Serial or SD card.
+  IDLE:    card? → read UID → GRANTED or DENIED (timestamp + feedback)
+  GRANTED: OPEN_MS elapsed → servo to locked, LED off → IDLE
+  DENIED:  DENIED_MS elapsed → LED off, LCD back to idle → IDLE
+```
+
+```mermaid
+stateDiagram-v2
+  IDLE --> GRANTED: UID match
+  IDLE --> DENIED:  UID unknown
+  GRANTED --> IDLE: OPEN_MS elapsed
+  DENIED --> IDLE:  DENIED_MS elapsed
+```
+
+Transitions happen on card tap; the *exit* from GRANTED/DENIED is pure
+`millis()` timing — the loop spins freely between events.
+
+## Upload & test
+
+1. Upload `11_smart_door_lock.ino`, Serial at 9600.
+2. LCD shows `SMART DOOR LOCK` / `Tap your card`. Adjust the contrast
+   pot until text is crisp.
+3. Tap an unknown card → `ACCESS DENIED` + red LED ~1.5 s → back to idle.
+4. Copy its UID from Serial into `ALLOWED_UID`, re-upload, tap →
+   `ACCESS GRANTED`, servo swings open for `OPEN_MS`, then re-locks.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| LCD blank / blocks | Contrast pot — turn it; or VDD/RW unwired |
+| `firmware version: 0x0` | RC522 on 5 V or SPI wiring wrong — remember 3.3 V |
+| LCD garbage while RFID works | RS/E still on SPI pins — check the **A2/A3** change made it to hardware |
+| Servo twitches at boot | Servo attach pulse — normal; make sure `LOCKED_ANGLE` matches your horn |
+| Reads card once then dead | `PICC_HaltA`/`StopCrypto1` removed — restore them |
+
+## Challenges
+
+- **Beginner:** add a third card to `ALLOWED_UID` as a "guest" (array loop from project 10).
+- **Intermediate:** show `CARD: xx xx xx xx` on the LCD on every tap — but only during a new state, not spamming.
+- **Advanced:** two-line log — keep the last event on line 2 permanently, current state on line 1.
+
+## Knowledge check
+
+1. Why couldn't the LCD keep RS on D12 and E on D11? Name the two peripherals that collide.
+2. `PIN_LCD_RS = A2` — why is an "analog" pin fine for a digital LCD signal?
+3. In `DENIED`, who owns the timer that returns to IDLE — the transition or `loop()`?
+4. Why is the servo re-locked by a timeout in `GRANTED` rather than by reading the card again?
+
+## Safety notes
+
+> **Not a real lock.** Everything from project 10 applies: the UID is
+> clonable, the "key" lives in the firmware, and a SG90 is a demo bolt —
+> anyone can overpower it. Treat this as the *shape* of a real system,
+> not the security of one. Also: never power the servo from the Uno's
+> 5 V rail long-term — a stalled SG90 can brown-out the whole board.

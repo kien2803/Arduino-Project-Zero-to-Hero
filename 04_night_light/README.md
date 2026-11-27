@@ -1,75 +1,113 @@
 # 04 — Automatic Night Light
 
-A simple automatic night light using a **4-pin light sensor module**.
+An LED that switches itself on when the room gets dark — the same trick
+as plug-in corridor night lights.
 
-## What it does
+## Real-world problem
 
-When the surrounding light becomes low, the LED turns on.  
-When it becomes bright again, the LED turns off.
+Corridor and porch night lights measure ambient light and switch at a
+threshold. This project reads a light sensor's analog output, compares
+it to a threshold, and drives the LED — including the real-world step of
+*calibrating* the threshold for your room.
 
-This is the same idea used in many inexpensive plug-in night lights.
+## Learning objectives
+
+- Read a sensor's analog output (`analogRead`)
+- Turn a continuous measurement into a binary decision (thresholding)
+- Calibrate a threshold against real sensor output via Serial Monitor
+- Tell apart a module's **AO** (proportional) and **DO** (comparator) outputs
+
+## Prerequisites
+
+Project 02 (`analogRead`).
 
 ## Components
 
-| Item | Qty |
-|------|-----|
-| Arduino Uno | 1 |
-| 4-pin Light Sensor module (MS-CDS05 style) | 1 |
-| LED | 1 |
-| 220 Ω resistor | 1 |
-| Jumper wires |  |
+| Qty | Component | Notes |
+|----:|-----------|-------|
+| 1 | Arduino Uno | |
+| 1 | 4-pin light sensor module (MS-CDS05 style, LDR + LM393) | Has AO **and** DO pins |
+| 1 | LED + 220 Ω resistor | |
+| — | Jumper wires | |
 
-## 4-pin Light Sensor Pinout
-
-| Pin on module | Connect to Arduino |
-|---------------|--------------------|
-| VCC           | 5V                 |
-| GND           | GND                |
-| AO            | A0                 |
-| DO            | D2                 |
-
-The module has a small blue potentiometer.  
-Turning it changes the switching point of the **DO** pin.
+**About the two outputs:** the module's *AO* pin gives the raw
+light-dependent voltage (0–1023 after `analogRead`). Its *DO* pin is a
+digital HIGH/LOW switched by an onboard comparator + blue trim-pot.
+**This project uses AO** — you see the actual numbers, which makes
+calibration visible and teaches thresholding. (DO is covered as an
+extension below.)
 
 ## Wiring
 
 ```
-Light Sensor (4-pin)      Arduino
---------------------      -------
-VCC                   --> 5V
-GND                   --> GND
-AO                    --> A0
-DO                    --> D2
+Light sensor (4-pin)     Arduino
+--------------------     -------
+VCC                  --> 5V
+GND                  --> GND
+AO                   --> A0
+DO                   --> (not connected)
 
 LED anode  --> 220 Ω --> D9
 LED cathode ----------> GND
 ```
 
+| Signal | Arduino pin |
+|--------|-------------|
+| Sensor AO | **A0** |
+| LED anode (via 220 Ω) | **D9** |
+
+> **Simulation:** Wokwi has an LDR module; set it up on A0 the same way.
+
 ## How it works
 
-1. The sensor measures ambient light.
-2. **AO** gives a continuous analog value (0–1023).
-3. **DO** gives a simple digital signal (HIGH or LOW) according to the potentiometer setting.
-4. In this project we use the **DO** pin because it is the easiest way.
+1. The LDR changes resistance with light; the module turns it into a
+   voltage on AO (on most modules: dark → *higher* reading).
+2. `analogRead(A0)` → 0–1023, printed to Serial every 300 ms.
+3. `lightValue > threshold` → dark → LED on; otherwise LED off.
+4. `threshold = 900` is a starting guess — you will tune it for your room.
 
-Most modules of this type output **LOW on DO when it is dark**.  
-If your LED turns on in bright light instead of dark light, just change `LOW` to `HIGH` in the code.
+## The algorithm
 
-## Upload & Test
+```
+loop forever:
+    lightValue = analogRead(A0)
+    print lightValue
+    if lightValue > threshold → LED on   ("DARK")
+    else                      → LED off  ("BRIGHT")
+    wait 300 ms
+```
 
-1. Upload the sketch.
-2. Open Serial Monitor (9600 baud). You will see AO and DO values updating.
-3. Cover the sensor with your hand → LED should turn on.
-4. Remove your hand or shine a light → LED should turn off.
-5. Adjust the blue potentiometer on the module until the switching point feels right for your room.
+## Upload & test
 
-## Tips
+1. Upload `04_night_light.ino`, open Serial Monitor at 9600.
+2. Watch the numbers in normal room light — write down the typical value.
+3. Cover the sensor — the number should jump past `threshold` → LED on.
+4. **Calibrate:** set `threshold` a bit above your room's "bright" value
+   and below the covered value, re-upload, verify it flips cleanly.
 
-- Watch the Serial Monitor while turning the potentiometer. This makes adjustment very easy.
-- If the analog values are inverted on your module (high number = bright), that is normal. We mainly use the DO pin in this project.
+## Troubleshooting
 
-## Extensions
+| Symptom | Likely cause |
+|---|---|
+| LED on in bright light, off when covered | Your module's AO is inverted (bright → high) — flip `>` to `<` |
+| Value stuck at 0 or 1023 | AO not connected / wired to wrong pin |
+| LED chatters at the boundary | Normal — needs hysteresis (see Challenges) |
+| Nothing in Serial Monitor | Wrong baud (must be 9600) or board not flashed |
 
-- Use the AO value with `analogWrite()` to make the LED brightness change gradually.
-- Add a relay to control a real 12 V or 220 V lamp.
-- Combine later with the thermometer project.
+## Challenges
+
+- **Beginner:** find your room's bright and dark values, write your calibrated `threshold` in the code comment.
+- **Intermediate:** add hysteresis — separate `DARK_ON = 800` and `BRIGHT_OFF = 700` thresholds so the LED can't flicker at the boundary.
+- **Advanced:** wire the module's **DO** pin to D2 and compare both approaches in one sketch — when would you prefer DO over AO?
+
+## Knowledge check
+
+1. What's the difference between the module's AO and DO pins?
+2. Why is calibrating `threshold` against *your* sensor output better than trusting the example value?
+3. The LED flickers when light hovers at the threshold — what technique fixes that?
+4. If your module outputs *lower* values when dark, what exactly must change in the code?
+
+## Safety notes
+
+- Sensor modules vary in AO polarity — verify with Serial before trusting
+  the `>` comparison; flipping it is a one-character fix, not an error.
