@@ -15,13 +15,13 @@ A structured embedded curriculum that goes from blinking an LED to autonomous ro
 | 02 | [Dimmer Lamp](./02_dimmer_led/) | Adjustable desk lamp | 🟢 Easy | Analog input, PWM |
 | 03 | [Mini Piano](./03_piano/) | Toy piano / doorbell | 🟢 Easy | Buttons, tone generation |
 | 04 | [Automatic Night Light](./04_night_light/) | Corridor night light | 🟢 Easy | Light sensor, threshold |
-| 05 | [Room Thermometer](./05_thermometer/) | Digital room thermometer | 🟡 Medium | NTC sensor, calculation, display |
-| 06 | [Anti-Theft Alarm](./06_anti_theft_alarm/) | Simple vibration alarm | 🟡 Medium | Digital sensor, buzzer |
-| 07 | [Remote Controlled Lamp](./07_remote_lamp/) | IR remote lamp / socket | 🟡 Medium | IR receiver, relay |
-| 08 | [Password Lock](./08_password_lock/) | Keypad door lock | 🟡 Medium | Keypad, state machine |
-| 09 | [Servo Barrier Gate](./09_servo_barrier/) | Parking barrier / gate | 🟡 Medium | Servo control |
-| 10 | [RFID Access Control](./10_rfid_access/) | Card access system | 🔶 Medium-Hard | RFID, UID checking |
-| 11 | [Smart Door Lock](./11_smart_door_lock/) | Full smart lock (RFID + Keypad + LCD + Servo) | 🔴 Hard | System integration |
+| 05 | [Digital Dice](./05_digital_dice/) | Handheld dice roller | 🟡 Medium | 7-segment display, random() |
+| 06 | [LED Light Meter](./06_led_meter/) | VU / battery meter | 🟡 Medium | 74HC595 shift register |
+| 07 | [Remote NeoPixel Lamp](./07_remote_neopixel/) | Smart RGB bulb | 🟡 Medium | IR remote, WS2812 |
+| 08 | [Countdown Timer](./08_countdown_timer/) | Kitchen / oven timer | 🟡 Medium | 4-digit 7-seg multiplexing, state machine |
+| 09 | [Stepper Motor](./09_stepper_motor/) | Printer / scanner axis | 🟡 Medium | Coil sequencing, micros() |
+| 10 | [RFID Access Control](./10_rfid_access/) | Card access system | 🔶 Medium-Hard | SPI, UID checking |
+| 11 | [Smart Door Lock](./11_smart_door_lock/) | Full smart lock (RFID + PIN + LCD + Servo) | 🔴 Hard | System integration |
 
 **Phase 2 — Robotics Fundamentals** and **Phase 3 — Intelligent
 Robotics** (DC motors, line tracking, encoders, PID, sensor fusion) are

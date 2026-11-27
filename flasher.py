@@ -40,13 +40,13 @@ LESSONS = [
     ("02_dimmer_led",       "Dimmer Lamp",              "Potentiometer -> PWM brightness, analog input"),
     ("03_piano",            "Mini Piano",               "Pushbuttons + buzzer tones"),
     ("04_night_light",      "Automatic Night Light",    "LDR light sensor + threshold"),
-    ("05_thermometer",      "Room Thermometer",         "NTC sensor + LCD temperature display"),
-    ("06_anti_theft_alarm", "Anti-Theft Alarm",         "Vibration sensor + buzzer alarm"),
-    ("07_remote_lamp",      "Remote Controlled Lamp",   "IR remote + relay switching"),
-    ("08_password_lock",    "Password Lock",            "4x4 keypad + 4-digit password"),
-    ("09_servo_barrier",    "Servo Barrier Gate",       "SG90 servo parking barrier"),
-    ("10_rfid_access",      "RFID Access Control",      "RC522 card reader + UID check"),
-    ("11_smart_door_lock",  "Smart Door Lock",          "RFID + keypad + LCD + servo (flagship)"),
+    ("05_digital_dice",     "Digital Dice",             "1-digit 7-segment + random roll"),
+    ("06_led_meter",        "LED Light Meter",          "74HC595 shift register + 8-LED bar graph"),
+    ("07_remote_neopixel",  "Remote NeoPixel Lamp",     "IR remote + WS2812 ring colors/effects"),
+    ("08_countdown_timer",  "Countdown Timer",          "4-digit 7-seg multiplexing + buzzer"),
+    ("09_stepper_motor",    "Stepper Motor",            "28BYJ-48 + ULN2003, coil sequencing"),
+    ("10_rfid_access",      "RFID Access Control",      "RC522 + NeoPixel feedback + relay"),
+    ("11_smart_door_lock",  "Smart Door Lock",          "RFID + IR-PIN + LCD + servo (capstone)"),
 ]
 
 

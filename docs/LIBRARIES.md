@@ -6,11 +6,14 @@ Install by name in the Arduino IDE Library Manager.
 | Library | Version | Projects | Notes |
 |---------|---------|----------|-------|
 | MFRC522 | 1.4.12 | 10, 11 | miguelbalboa — SPI RFID |
-| Keypad | 3.1.1 | 08 | Mark Stanley / Alexander Brevig |
-| IRremote | 4.7.1 | 07 | arduino-irremote — **v4 API**, not compatible with v2 sketches |
-| Servo | 1.3.0 | 09, 11 | arduino-libraries |
+| Adafruit_NeoPixel | 1.12.x | 07, 10, 11 | WS2812 ring driver |
+| IRremote | 4.7.1 | 07, 11 | arduino-irremote — **v4 API**, not compatible with v2 sketches |
+| Servo | 1.3.0 | 11 | arduino-libraries |
 | LiquidCrystal | 1.0.7 | 11 | arduino-libraries |
 | SPI | core | 10, 11 | bundled with the AVR core |
+
+No library needed for: `shiftOut()` (74HC595), 7-segment multiplexing,
+and the 28BYJ-48 coil sequence — those are taught raw on purpose.
 
 ## Version notes
 

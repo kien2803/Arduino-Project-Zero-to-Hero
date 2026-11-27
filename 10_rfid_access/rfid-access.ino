@@ -1,73 +1,97 @@
-// 10 - RFID Access Control (basic)
-// Only an authorized card turns the LED on and gives a success beep.
+// 10 — RFID Access Control (RC522 + NeoPixel feedback)
+// Tap a registered card → green sweep on the ring + relay opens.
+// Unknown card → red flash + deny. Teaches: SPI bus, UID matching,
+// non-blocking timed grant, using the ring as a status display.
 //
-// SECURITY NOTE: UID matching is an educational demonstration. UIDs are
-// not secret — they can be read and cloned with a phone or a $10 tool.
-// Do not build a real lock on UID matching alone.
+// *** TEACHING DEMO — not real security. MIFARE UIDs are readable
+// and clonable; the whitelist is compiled into the firmware. ***
 
 #include <SPI.h>
 #include <MFRC522.h>
+#include <Adafruit_NeoPixel.h>
 
-#define SS_PIN 10
-#define RST_PIN 9
+const uint8_t RFID_SS   = 10;
+const uint8_t RFID_RST  = 9;
+const uint8_t RELAY_PIN = 2;
+const uint8_t RING_PIN  = 7;
+const uint8_t NUM_LEDS  = 12;
 
-MFRC522 rfid(SS_PIN, RST_PIN);
+const unsigned long GRANT_MS = 3000;   // how long access stays open
+const unsigned long DENY_MS  = 1200;   // red-flash duration
 
-// Replace with the UID you get from scanning your own card
-byte authorizedUID[4] = {0xA1, 0xB2, 0xC3, 0xD4};
+// ---- paste your card's UID here (printed on Serial on first tap) ----
+const byte ALLOWED_UID[] = {0xDE, 0xAD, 0xBE, 0xEF};
+// --------------------------------------------------------------------
 
-const int ledPin    = 7;
-const int buzzerPin = 8;
+MFRC522 rfid(RFID_SS, RFID_RST);
+Adafruit_NeoPixel ring(NUM_LEDS, RING_PIN, NEO_GRB + NEO_KHZ800);
 
-const unsigned long GRANTED_MS = 2000;  // LED stays on this long
-unsigned long grantedUntil = 0;
+enum State { IDLE, GRANTED, DENIED } state = IDLE;
+unsigned long stateAt = 0;
+
+bool uidMatches(const MFRC522::Uid &u) {
+  if (u.size != sizeof(ALLOWED_UID)) return false;
+  for (uint8_t i = 0; i < u.size; i++)
+    if (u.uidByte[i] != ALLOWED_UID[i]) return false;
+  return true;
+}
+
+void printUid(const MFRC522::Uid &u) {
+  for (uint8_t i = 0; i < u.size; i++) {
+    if (u.uidByte[i] < 0x10) Serial.print('0');
+    Serial.print(u.uidByte[i], HEX); Serial.print(' ');
+  }
+}
+
+void setState(State s) {
+  state = s; stateAt = millis();
+  if (s == GRANTED) {
+    digitalWrite(RELAY_PIN, HIGH);
+    Serial.println("ACCESS GRANTED");
+  } else if (s == DENIED) {
+    Serial.println("ACCESS DENIED");
+  }
+}
 
 void setup() {
   Serial.begin(9600);
   SPI.begin();
   rfid.PCD_Init();
-  pinMode(ledPin, OUTPUT);
-  pinMode(buzzerPin, OUTPUT);
-  Serial.println("RFID Access Control ready");
-  Serial.println("Scan a card...");
-}
-
-bool isAuthorized() {
-  if (rfid.uid.size != 4) return false;
-  for (byte i = 0; i < 4; i++) {
-    if (rfid.uid.uidByte[i] != authorizedUID[i]) return false;
-  }
-  return true;
+  pinMode(RELAY_PIN, OUTPUT);
+  ring.begin();
+  Serial.print("RC522 firmware: 0x"); Serial.println(rfid.PCD_ReadRegister(MFRC522::VersionReg), HEX);
+  Serial.println("RFID access — tap a card");
 }
 
 void loop() {
-  // End of the "granted" window — non-blocking (was delay(2000)).
-  if (grantedUntil && millis() >= grantedUntil) {
-    digitalWrite(ledPin, LOW);
-    grantedUntil = 0;
+  // --- timed return to IDLE (non-blocking — this replaced delay()) ---
+  if (state == GRANTED && millis() - stateAt >= GRANT_MS) {
+    digitalWrite(RELAY_PIN, LOW);
+    ring.clear(); ring.show();
+    state = IDLE;
+    Serial.println("relocked");
+  } else if (state == DENIED && millis() - stateAt >= DENY_MS) {
+    ring.clear(); ring.show();
+    state = IDLE;
   }
 
+  // --- feedback animation while in a state ---
+  if (state == GRANTED) {                      // green sweep
+    uint8_t head = (millis() / 60) % NUM_LEDS;
+    ring.clear();
+    ring.setPixelColor(head, ring.Color(0, 255, 0));
+    ring.setPixelColor((head + 1) % NUM_LEDS, ring.Color(0, 120, 0));
+    ring.show();
+  } else if (state == DENIED && (millis() / 200) % 2) {  // red blink
+    ring.fill(ring.Color(255, 0, 0)); ring.show();
+  } else if (state == DENIED) {
+    ring.clear(); ring.show();
+  }
+
+  // --- new card? ---
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
-
-  Serial.print("UID:");
-  for (byte i = 0; i < rfid.uid.size; i++) {
-    Serial.print(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ");
-    Serial.print(rfid.uid.uidByte[i], HEX);
-  }
-  // Some cards/tags use 7- or 10-byte UIDs — this demo only authorizes 4-byte.
-  if (rfid.uid.size != 4) Serial.print("  (non-4-byte UID)");
-  Serial.println();
-
-  if (isAuthorized()) {
-    Serial.println("Access granted");
-    digitalWrite(ledPin, HIGH);
-    grantedUntil = millis() + GRANTED_MS;
-    tone(buzzerPin, 1000, 200);
-  } else {
-    Serial.println("Access denied");
-    tone(buzzerPin, 300, 700);
-  }
-
+  Serial.print("UID: "); printUid(rfid.uid); Serial.println();
+  setState(uidMatches(rfid.uid) ? GRANTED : DENIED);
   rfid.PICC_HaltA();
   rfid.PCD_StopCrypto1();
 }

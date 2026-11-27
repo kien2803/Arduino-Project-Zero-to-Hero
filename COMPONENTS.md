@@ -1,56 +1,54 @@
 # Recommended Components
 
-This series is designed around a typical Arduino Uno R3 starter kit.  
-You do not need every part for every project.
+This series is designed around the kit pictured in
+[docs/kit-contents.png](./docs/kit-contents.png) — a standard Arduino
+Uno starter kit. You do not need every part for every project.
 
 ## Essential
 
 | Category | Items |
 |----------|-------|
 | Board | Arduino Uno R3 (or compatible) |
-| Power | USB cable, optional 9V battery + clip |
-| Prototyping | Breadboard, jumper wires |
-| Basic | LEDs (red/green/yellow), 220 Ω resistors, push buttons, 10 kΩ potentiometer, buzzer |
+| Power | USB cable, 9 V battery + DC-jack clip |
+| Prototyping | Breadboard, jumper wires (M-M + F-M) |
+| Basic | Red/green/yellow LEDs, 220 Ω / 1 kΩ / 10 kΩ resistors, push buttons, B10K potentiometer, active buzzer |
 
 ## Sensors & Input
 
 | Item | Used in projects |
 |------|------------------|
-| Light sensor (LDR / photoresistor module) | 04 Night Light |
-| NTC temperature module | 05 Thermometer |
-| Vibration / shock sensor | 06 Anti-Theft Alarm |
-| IR receiver + remote | 07 Remote Lamp |
-| 4×4 keypad | 08 Password Lock, 11 Smart Door Lock |
-| RFID RC522 + cards/tags | 10 & 11 |
+| Light sensor (LDR module) | 04 Night Light, 06 LED Meter |
+| IR receiver + 20-key remote | 07 NeoPixel Lamp, 11 Smart Door Lock |
+| RFID RC522 + cards/tags | 10 RFID Access, 11 Smart Door Lock |
 
-## Actuators & Output
+## Displays & Output
 
 | Item | Used in projects |
 |------|------------------|
-| Micro Servo SG90 | 09 Barrier, 11 Smart Door Lock |
-| 5 V Relay module (1 channel) | 07 Remote Lamp |
-| LCD 1602 | 05 Thermometer, 11 Smart Door Lock |
-| 7-segment display (optional) | Extensions |
+| 1-digit 7-segment (common anode) | 05 Digital Dice |
+| 74HC595 shift register + 8 LEDs | 06 LED Meter |
+| 12-LED NeoPixel ring (WS2812) | 07 Remote Lamp, 10 RFID, 11 Door Lock |
+| 4-digit 7-segment (common cathode) | 08 Countdown Timer |
+| LCD 1602 | 11 Smart Door Lock |
+| SG90 servo | 11 Smart Door Lock |
+| 28BYJ-48 stepper + ULN2003 driver | 09 Stepper Motor |
+| 1-channel 5 V relay | 10 RFID Access |
 
-## Optional but useful
+## Kit contents reference
 
-- Stepper motor 28BYJ-48 + ULN2003 (for future turntable / rotating projects)
-- NeoPixel strip (for decorative lighting extensions)
-- Extra LEDs and resistors
+The numbered photo in `docs/kit-contents.png` maps to: Uno R3, RC522 +
+tags, LCD1602, 1-ch relay, NTC module, SW-420 vibration module, LDR
+module, 74HC595, 4-digit 7-seg, 12-LED NeoPixel ring, 1-digit 7-seg,
+1838T IR receiver, 20-key remote, SG90, 28BYJ-48 + ULN2003, jumpers,
+F-M dupont, 9 V battery clip + battery, button caps + buttons, kit box,
+yellow/green/red LEDs, B10K pot, breadboard, resistors (10 k/220/1 k),
+active buzzer.
 
-**Important:** The RFID RC522 module must be powered from **3.3 V** only.
+> Parts present in the kit but currently unused in projects 01–11: NTC
+> thermistor module, SW-420 vibration module — both fit nicely into the
+> lesson **Challenges** (e.g., add a temperature readout or shock
+> detection to the capstone).
 
-## Phase 2/3 preview — robotics parts
-
-For the designed Phase 2 (robotics fundamentals) and Phase 3
-(intelligent robotics) projects in [ROADMAP.md](./ROADMAP.md), plan on:
-
-| Item | Used in |
-|------|---------|
-| 2WD robot chassis + 2 DC gear motors + wheels | 15–22 |
-| TB6612 or L298N motor driver | 13–22 |
-| 2× TCRT5000 IR line sensors | 15, 19 |
-| HC-SR04 ultrasonic | 14, 20, 21 |
-| Wheel encoders (slot disc or hall) | 16, 18, 21 |
-| MPU6050 IMU (I²C) | 21 |
-| Battery pack (4×AA or 18650 + holder) — motors need their own supply | 17–22 |
+**Important:** The RC522 runs on **3.3 V** only; NeoPixel rings accept
+5 V. The ULN2003 board ships paired with the 28BYJ-48 — they're used
+together, never the motor alone.

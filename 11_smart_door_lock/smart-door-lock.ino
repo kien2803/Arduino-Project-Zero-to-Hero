@@ -1,144 +1,156 @@
-// 11 - Smart Door Lock (Flagship)
-// RFID card + Servo lock + LCD + buzzer + status LEDs.
+// 11 — Smart Door Lock (RFID + IR-remote PIN + LCD + Servo)
+// Capstone: tap a registered card, then type a 4-digit PIN on the IR
+// remote (the kit has no keypad — the remote's number keys do the job).
+// LCD shows status, servo is the bolt, ring shows grant/deny.
 //
-// NOTE ON PINS: the RC522 needs SPI (D11 MOSI, D12 MISO, D13 SCK, D10 SS).
-// The LCD is a *parallel* display, so its RS/E lines were moved to A2/A3 —
-// do NOT wire the LCD to D11/D12, they belong to SPI.
-//
-// SECURITY NOTE: UID matching is an educational demonstration. Card UIDs
-// are not secret — they can be read and cloned. A production lock needs
-// real authentication (e.g. MIFARE sector auth) plus a secure backend.
+// *** TEACHING DEMO, NOT A REAL LOCK ***
+// UIDs are clonable, the PIN lives in firmware, and an SG90 is a demo
+// bolt. This shows the SHAPE of a real system, not the security of one.
 
 #include <SPI.h>
 #include <MFRC522.h>
 #include <Servo.h>
 #include <LiquidCrystal.h>
+#include <IRremote.h>
+#include <Adafruit_NeoPixel.h>
 
-#define SS_PIN  10
-#define RST_PIN 9
+// ---- pins (note: LCD RS/E live on A2/A3 — NOT D11/D12, which are SPI) ----
+const uint8_t RFID_SS = 10, RFID_RST = 9;      // SPI: 11,12,13
+const uint8_t LCD_RS = A2, LCD_E = A3;         // freed from SPI pins!
+const uint8_t LCD_D4 = 4, LCD_D5 = 5, LCD_D6 = 6, LCD_D7 = 7;
+const uint8_t SERVO_PIN  = 8;
+const uint8_t RING_PIN   = 2;
+const uint8_t IR_PIN     = A1;
+const uint8_t BUZZER     = A0;
+const uint8_t NUM_LEDS   = 12;
 
-MFRC522 rfid(SS_PIN, RST_PIN);
-Servo doorLock;
-LiquidCrystal lcd(A2, A3, 5, 4, 3, 2);  // RS, E, D4, D5, D6, D7 (off SPI pins!)
+const int8_t LOCKED_ANGLE = 0, OPEN_ANGLE = 90;
+const unsigned long OPEN_MS    = 4000;   // door stays open this long
+const unsigned long DENIED_MS  = 1500;
+const unsigned long PIN_TIMEOUT = 10000; // give up typing after 10 s
 
-const int servoPin  = 6;
-const int buzzerPin = 8;
-const int greenLed  = 7;
-const int redLed    = A1;
+// ---- edit these: paste your card UID + remote codes from Serial ----
+const byte ALLOWED_UID[] = {0xDE, 0xAD, 0xBE, 0xEF};
+const uint8_t PIN[4] = {1, 2, 3, 4};
+// common 20-key NEC remote digit codes — verify on Serial, fix if wrong:
+const uint8_t CMD_DIGIT[10] = {
+  0x16, 0x0C, 0x18, 0x5E, 0x08, 0x1C, 0x5A, 0x42, 0x52, 0x4A  // 0..9
+};
+// -------------------------------------------------------------------
 
-const int LOCKED_ANGLE   = 0;
-const int UNLOCKED_ANGLE = 90;
+MFRC522 rfid(RFID_SS, RFID_RST);
+LiquidCrystal lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+Adafruit_NeoPixel ring(NUM_LEDS, RING_PIN, NEO_GRB + NEO_KHZ800);
+Servo bolt;
 
-const unsigned long OPEN_MS   = 3500;  // door stays unlocked this long
-const unsigned long DENIED_MS = 1200;  // "access denied" feedback length
+enum State { IDLE, ENTER_PIN, GRANTED, DENIED } state = IDLE;
+unsigned long stateAt = 0;
+uint8_t typed = 0, pinBuf[4];
 
-// Replace with your real card UID (scan it with project 10 first).
-byte authorizedUID[4] = {0xA1, 0xB2, 0xC3, 0xD4};
-
-// State machine: loop() never blocks, so the LCD/LEDs/timers stay live.
-enum State { IDLE, GRANTED, DENIED };
-State state = IDLE;
-unsigned long stateEnteredAt = 0;
-
-void showIdleScreen() {
+void lcdStatus(const char *l1, const char *l2 = "") {
   lcd.clear();
-  lcd.print("Smart Door Lock");
-  lcd.setCursor(0, 1);
-  lcd.print("Scan card...");
+  lcd.setCursor(0, 0); lcd.print(l1);
+  lcd.setCursor(0, 1); lcd.print(l2);
 }
 
-void enterIdle() {
-  digitalWrite(greenLed, LOW);
-  digitalWrite(redLed, LOW);
-  doorLock.write(LOCKED_ANGLE);
-  showIdleScreen();
-  state = IDLE;
+int8_t digitFromCmd(uint8_t cmd) {
+  for (uint8_t d = 0; d < 10; d++) if (CMD_DIGIT[d] == cmd) return d;
+  return -1;
 }
 
-void enterGranted() {
-  lcd.clear();
-  lcd.print("Access Granted");
-  lcd.setCursor(0, 1);
-  lcd.print("Welcome!");
-  digitalWrite(greenLed, HIGH);
-  tone(buzzerPin, 1000, 180);
-  doorLock.write(UNLOCKED_ANGLE);
-  stateEnteredAt = millis();
-  state = GRANTED;
+bool uidMatches(const MFRC522::Uid &u) {
+  if (u.size != sizeof(ALLOWED_UID)) return false;
+  for (uint8_t i = 0; i < u.size; i++)
+    if (u.uidByte[i] != ALLOWED_UID[i]) return false;
+  return true;
 }
 
-void enterDenied() {
-  lcd.clear();
-  lcd.print("Access Denied");
-  lcd.setCursor(0, 1);
-  lcd.print("Unknown card");
-  digitalWrite(redLed, HIGH);
-  tone(buzzerPin, 280, 700);
-  doorLock.write(LOCKED_ANGLE);   // stays locked
-  stateEnteredAt = millis();
-  state = DENIED;
+void printUid(const MFRC522::Uid &u) {
+  for (uint8_t i = 0; i < u.size; i++) {
+    if (u.uidByte[i] < 0x10) Serial.print('0');
+    Serial.print(u.uidByte[i], HEX); Serial.print(' ');
+  }
+}
+
+void setState(State s) {
+  state = s; stateAt = millis();
+  switch (s) {
+    case IDLE:      lcdStatus("SMART DOOR LOCK", "Tap your card"); break;
+    case ENTER_PIN: typed = 0; lcdStatus("Card OK — PIN:", ""); break;
+    case GRANTED:
+      bolt.write(OPEN_ANGLE);
+      ring.fill(ring.Color(0, 180, 0)); ring.show();
+      lcdStatus("ACCESS GRANTED", "Welcome!");
+      tone(BUZZER, 1200, 120);
+      Serial.println("GRANTED — door open");
+      break;
+    case DENIED:
+      ring.fill(ring.Color(255, 0, 0)); ring.show();
+      lcdStatus("ACCESS DENIED", "");
+      tone(BUZZER, 300, 400);
+      Serial.println("DENIED");
+      break;
+  }
 }
 
 void setup() {
   Serial.begin(9600);
   SPI.begin();
   rfid.PCD_Init();
-
-  doorLock.attach(servoPin);
+  IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);
   lcd.begin(16, 2);
-
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(greenLed, OUTPUT);
-  pinMode(redLed, OUTPUT);
-
-  enterIdle();
-  Serial.println("Smart Door Lock ready");
-}
-
-bool checkUID() {
-  if (rfid.uid.size != 4) return false;
-  for (byte i = 0; i < 4; i++) {
-    if (rfid.uid.uidByte[i] != authorizedUID[i]) return false;
-  }
-  return true;
-}
-
-void pollCard() {
-  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
-
-  Serial.print("Scanned UID:");
-  for (byte i = 0; i < rfid.uid.size; i++) {
-    Serial.print(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ");
-    Serial.print(rfid.uid.uidByte[i], HEX);
-  }
-  if (rfid.uid.size != 4) Serial.print("  (non-4-byte UID)");
-  Serial.println();
-
-  if (checkUID()) enterGranted();
-  else            enterDenied();
-
-  rfid.PICC_HaltA();
-  rfid.PCD_StopCrypto1();
+  bolt.attach(SERVO_PIN);
+  bolt.write(LOCKED_ANGLE);
+  ring.begin();
+  pinMode(BUZZER, OUTPUT);
+  setState(IDLE);
+  Serial.print("RC522 firmware: 0x");
+  Serial.println(rfid.PCD_ReadRegister(MFRC522::VersionReg), HEX);
 }
 
 void loop() {
   unsigned long now = millis();
-  switch (state) {
-    case IDLE:
-      pollCard();
-      break;
 
-    case GRANTED:
-      if (now - stateEnteredAt >= OPEN_MS) {
-        Serial.println("Locking");
-        enterIdle();
-      }
-      break;
+  // ---- timed exits (non-blocking everywhere) ----
+  if (state == GRANTED && now - stateAt >= OPEN_MS) {
+    bolt.write(LOCKED_ANGLE);
+    ring.clear(); ring.show();
+    setState(IDLE);
+    Serial.println("relocked");
+  } else if (state == DENIED && now - stateAt >= DENIED_MS) {
+    ring.clear(); ring.show();
+    setState(IDLE);
+  } else if (state == ENTER_PIN && now - stateAt >= PIN_TIMEOUT) {
+    setState(DENIED);
+    Serial.println("PIN timeout");
+  }
 
-    case DENIED:
-      if (now - stateEnteredAt >= DENIED_MS) {
-        enterIdle();
+  // ---- IR digit entry ----
+  if (state == ENTER_PIN && IrReceiver.decode()) {
+    auto &d = IrReceiver.decodedIRData;
+    if (!(d.flags & IRDATA_FLAGS_IS_REPEAT)) {
+      Serial.print("IR cmd=0x"); Serial.println(d.command, HEX);
+      int8_t digit = digitFromCmd(d.command);
+      if (digit >= 0) {
+        pinBuf[typed++] = digit;
+        lcd.setCursor(typed - 1, 1); lcd.print('*');
+        tone(BUZZER, 800, 40);
+        if (typed == 4) {
+          bool ok = true;
+          for (uint8_t i = 0; i < 4; i++) ok &= (pinBuf[i] == PIN[i]);
+          setState(ok ? GRANTED : DENIED);
+        }
       }
-      break;
+    }
+    IrReceiver.resume();
+  }
+
+  // ---- card tap (only in IDLE) ----
+  if (state == IDLE &&
+      rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+    Serial.print("UID: "); printUid(rfid.uid); Serial.println();
+    setState(uidMatches(rfid.uid) ? ENTER_PIN : DENIED);
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
   }
 }

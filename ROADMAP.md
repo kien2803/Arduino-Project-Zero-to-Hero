@@ -24,8 +24,8 @@ blinking LEDs and ends with autonomous robots.
 | # | Project | Core concept |
 |---|---------|--------------|
 | 01–04 | Traffic light, dimmer, piano, night light | Digital/analog I/O, PWM, thresholds |
-| 05–07 | Thermometer, alarm, remote lamp | ADC math + guards, edge detection, IR decode |
-| 08–11 | Password lock, barrier, RFID, door lock | Keypad scanning, servos, SPI, state machines, integration |
+| 05–08 | Dice, LED meter, NeoPixel lamp, countdown timer | 7-segment displays, shift register, IR decode, multiplexing |
+| 09–11 | Stepper, RFID access, smart door lock | Coil sequencing, SPI, state machines, integration |
 
 Exit criteria: student can read a sensor, act on it with non-blocking
 timing, and combine 3+ peripherals without pin conflicts.
