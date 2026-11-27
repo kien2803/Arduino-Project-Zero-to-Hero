@@ -190,13 +190,18 @@ def flash(port, hexfile, log):
 
 # ---------------------------------------------------------------- GUI
 
+ACCENT, ACCENT_DIM = "#16a34a", "#9ca3af"
+LOG_BG, LOG_FG = "#1c1c1e", "#d4d4d4"
+
+
 def run_gui(ontop=False):
     root = tk.Tk()
     root.title("Arduino Zero→Hero — Lesson Flasher")
-    root.minsize(520, 480)
+    root.minsize(560, 560)
     if ontop:
         root.attributes("-topmost", True)
     q = queue.Queue()
+    state = {"flashing": False}
 
     def log(msg):
         q.put(("log", msg))
@@ -208,85 +213,156 @@ def run_gui(ontop=False):
             except queue.Empty:
                 break
             if kind == "log":
+                tag = "err" if "error" in msg.lower() or msg.startswith("ERROR") \
+                    else "ok" if "done" in msg.lower() or "complete" in msg.lower() \
+                    else "cmd" if msg.startswith("$") else None
                 logbox.configure(state="normal")
-                logbox.insert("end", msg + "\n")
+                logbox.insert("end", msg + "\n", tag)
                 logbox.see("end")
                 logbox.configure(state="disabled")
             elif kind == "ok":
-                status_var.set("done — flashed successfully")
-                upload_btn.configure(state="normal")
+                state["flashing"] = False
+                progress.stop()
+                set_status("done — flashed successfully", ACCENT)
+                upload_btn.configure(state="normal", bg=ACCENT)
             elif kind == "err":
-                status_var.set("failed — see log")
+                state["flashing"] = False
+                progress.stop()
+                set_status("failed — see log", "#dc2626")
                 log("ERROR: " + msg)
-                upload_btn.configure(state="normal")
+                upload_btn.configure(state="normal", bg=ACCENT)
         root.after(80, drain)
 
-    top = ttk.Frame(root, padding=12)
-    top.pack(fill="both", expand=True)
+    def set_status(text, color="#6b7280"):
+        status_var.set(text)
+        status_dot.configure(fg=color)
 
-    ttk.Label(top, text="Lesson", font=("", 11, "bold")).grid(row=0, column=0, sticky="w")
-    lesson_var = tk.StringVar()
-    lesson_box = ttk.Combobox(top, textvariable=lesson_var, state="readonly",
-                              values=[f"{d} — {t}" for d, t, _ in LESSONS])
-    lesson_box.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(2, 8))
-    lesson_box.current(0)
+    # ---- header
+    head = ttk.Frame(root, padding=(14, 12, 14, 0))
+    head.pack(fill="x")
+    ttk.Label(head, text="Arduino Zero→Hero",
+              font=("", 15, "bold")).pack(side="left")
+    ttk.Label(head, text="Lesson Flasher", foreground="#6b7280",
+              font=("", 15)).pack(side="left", padx=(8, 0))
+    ttk.Label(head, text="Pick a lesson · plug in the Uno · flash",
+              foreground="#6b7280").pack(side="right")
 
-    desc_var = tk.StringVar()
-    ttk.Label(top, textvariable=desc_var, foreground="#555").grid(
-        row=2, column=0, columnspan=2, sticky="w")
+    body = ttk.Frame(root, padding=14)
+    body.pack(fill="both", expand=True)
 
-    def on_pick(_=None):
-        i = lesson_box.current()
-        desc_var.set(LESSONS[i][2])
-        hexes = glob.glob(os.path.join(HEXDIR, LESSONS[i][0] + ".hex"))
-        status_var.set("" if hexes else "no prebuilt hex for this lesson")
-    lesson_box.bind("<<ComboboxSelected>>", on_pick)
+    # ---- lesson list
+    ttk.Label(body, text="LESSON", font=("", 9, "bold"),
+              foreground="#6b7280").grid(row=0, column=0, sticky="w")
+    lessons = ttk.Treeview(body, columns=("title", "desc"), show="headings",
+                           height=8, selectmode="browse")
+    lessons.heading("title", text="Project")
+    lessons.heading("desc", text="What it does")
+    lessons.column("title", width=235, minwidth=180, stretch=True)
+    lessons.column("desc", width=320, minwidth=200, stretch=True)
+    for d, t, desc in LESSONS:
+        lessons.insert("", "end", iid=d,
+                       values=(f"{d.split('_')[0]} · {t}", desc))
+    lessons.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(2, 10))
+    lessons.selection_set(LESSONS[0][0])
+    lscroll = ttk.Scrollbar(body, orient="vertical", command=lessons.yview)
+    lessons.configure(yscrollcommand=lscroll.set)
+    lscroll.grid(row=1, column=2, sticky="ns", pady=(2, 10))
 
-    ttk.Label(top, text="Board port", font=("", 11, "bold")).grid(
-        row=3, column=0, sticky="w", pady=(8, 0))
+    # ---- port row
+    port_head = ttk.Frame(body)
+    port_head.grid(row=2, column=0, columnspan=2, sticky="ew")
+    ttk.Label(port_head, text="BOARD", font=("", 9, "bold"),
+              foreground="#6b7280").pack(side="left")
+    port_state = tk.Label(port_head, text="○ no board",
+                          fg="#9ca3af", font=("", 9), bd=0)
+    port_state.pack(side="left", padx=(8, 0))
+    ttk.Button(port_head, text="↻ Refresh",
+               command=lambda: refresh_ports(manual=True)).pack(side="right")
+
     port_var = tk.StringVar()
-    port_box = ttk.Combobox(top, textvariable=port_var)
-    port_box.grid(row=4, column=0, sticky="ew", pady=(2, 8))
+    port_box = ttk.Combobox(body, textvariable=port_var)
+    port_box.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(2, 10))
 
-    def refresh_ports():
+    port_snapshot = []
+
+    def refresh_ports(manual=False):
         ports = list_ports()
-        port_box["values"] = [f"{d}  ({desc})" for d, desc in ports]
+        devices = [d for d, _ in ports]
+        if devices == port_snapshot and not manual:
+            return
+        port_snapshot[:] = devices
+        port_box["values"] = [f"{d}  —  {desc}" for d, desc in ports]
+        cur = port_var.get().split("  ")[0]
+        if cur in devices:                       # keep user's pick
+            return
         if ports:
             port_box.current(0)
+            usb = any(("ttyACM" in d or "ttyUSB" in d) for d in devices)
+            port_state.configure(
+                text="● board detected" if usb else "○ no USB board — showing all ports",
+                fg=ACCENT if usb else "#9ca3af")
         else:
             port_var.set("")
-            status_var.set("no board detected — plug in the Uno, then Refresh")
-    ttk.Button(top, text="↻ Refresh", command=refresh_ports).grid(
-        row=4, column=1, sticky="e", padx=(8, 0))
+            port_state.configure(text="○ no board — plug in the Uno",
+                                 fg="#9ca3af")
 
-    upload_btn = ttk.Button(top, text="⬆  Upload to board")
-    upload_btn.grid(row=5, column=0, columnspan=2, sticky="ew", ipady=6)
+    # ---- upload button + progress
+    upload_btn = tk.Button(body, text="⬆  Upload to board", bg=ACCENT,
+                           fg="white", activebackground="#15803d",
+                           activeforeground="white", bd=0, relief="flat",
+                           font=("", 12, "bold"), cursor="hand2", pady=10)
+    upload_btn.grid(row=4, column=0, columnspan=2, sticky="ew")
 
-    logbox = scrolledtext.ScrolledText(top, height=12, state="disabled",
-                                     font=("monospace", 9))
-    logbox.grid(row=6, column=0, columnspan=2, sticky="nsew", pady=(10, 4))
-    top.rowconfigure(6, weight=1)
-    top.columnconfigure(0, weight=1)
+    progress = ttk.Progressbar(body, mode="indeterminate")
+    progress.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(8, 10))
 
+    # ---- log
+    ttk.Label(body, text="LOG", font=("", 9, "bold"),
+              foreground="#6b7280").grid(row=6, column=0, sticky="w")
+    logbox = scrolledtext.ScrolledText(
+        body, height=9, state="disabled", bg=LOG_BG, fg=LOG_FG,
+        insertbackground=LOG_FG, bd=0, highlightthickness=0,
+        font=_fixed_font())
+    logbox.tag_configure("err", foreground="#f87171")
+    logbox.tag_configure("ok", foreground="#4ade80")
+    logbox.tag_configure("cmd", foreground="#60a5fa")
+    logbox.grid(row=7, column=0, columnspan=3, sticky="nsew", pady=(2, 0))
+    body.rowconfigure(7, weight=1)
+    body.columnconfigure(0, weight=1)
+
+    # ---- status bar
+    bar = ttk.Frame(root)
+    bar.pack(fill="x", side="bottom")
+    status_dot = tk.Label(bar, text="●", fg="#6b7280", font=("", 9), bd=0)
+    status_dot.pack(side="left", padx=(8, 4), pady=4)
     status_var = tk.StringVar(value="ready")
-    ttk.Label(root, textvariable=status_var, relief="sunken",
-              anchor="w", padding=4).pack(fill="x", side="bottom")
+    ttk.Label(bar, textvariable=status_var, anchor="w",
+              padding=(0, 4)).pack(side="left", fill="x", expand=True)
+
+    # ---- actions
+    def current_lesson():
+        sel = lessons.selection()
+        return sel[0] if sel else None
 
     def do_upload():
-        i = lesson_box.current()
-        if i < 0:
+        lesson = current_lesson()
+        if not lesson:
             messagebox.showwarning("No lesson", "Pick a lesson first.")
             return
-        port = port_var.get().split()[0]
+        port = port_var.get().split("  ")[0].strip()
         if not port:
-            messagebox.showwarning("No port", "Pick the board's serial port.")
+            messagebox.showwarning("No port",
+                                   "Plug in the board or pick a serial port.")
             return
-        hexfile = os.path.join(HEXDIR, LESSONS[i][0] + ".hex")
+        hexfile = os.path.join(HEXDIR, lesson + ".hex")
         if not os.path.isfile(hexfile):
             messagebox.showerror("Missing hex", f"{hexfile} not found.")
             return
-        upload_btn.configure(state="disabled")
-        status_var.set(f"flashing {LESSONS[i][0]} → {port} …")
+        state["flashing"] = True
+        upload_btn.configure(state="disabled", bg=ACCENT_DIM)
+        progress.start(12)
+        set_status(f"flashing {lesson} → {port} …", "#d97706")
+        log(f"── {lesson} → {port} ──")
 
         def worker():
             try:
@@ -297,10 +373,28 @@ def run_gui(ontop=False):
         threading.Thread(target=worker, daemon=True).start()
 
     upload_btn.configure(command=do_upload)
+    lessons.bind("<Double-1>", lambda _e: do_upload())
+    root.bind("<Return>", lambda _e: do_upload())
+    root.bind("<F5>", lambda _e: refresh_ports(manual=True))
+
     refresh_ports()
-    on_pick()
     drain()
+
+    def poll_ports():                            # board just plugged in → show it
+        if not state["flashing"]:
+            refresh_ports()
+        root.after(2000, poll_ports)
+    poll_ports()
+
     root.mainloop()
+
+
+def _fixed_font():
+    try:
+        import tkinter.font as tkfont
+        return tkfont.nametofont("TkFixedFont")
+    except Exception:
+        return ("monospace", 9)
 
 
 # ---------------------------------------------------------------- CLI
