@@ -1,9 +1,15 @@
 // 06 - Anti-Theft Vibration Alarm
-// Beeps and lights an LED when vibration is detected
+// Beeps and lights the LED when vibration is detected.
+// LED stays on for ALARM_MS after the last shock (non-blocking).
 
-const int vibPin    = 2;
+const int vibPin    = 2;   // sensor module DO (active HIGH on shock)
 const int ledPin    = 13;
 const int buzzerPin = 8;
+
+const unsigned long ALARM_MS = 1500;  // LED/alarm hold time after a shock
+
+unsigned long alarmUntil = 0;
+int lastVib = LOW;
 
 void setup() {
   pinMode(vibPin, INPUT);
@@ -14,12 +20,14 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(vibPin) == HIGH) {
-    digitalWrite(ledPin, HIGH);
-    tone(buzzerPin, 1500, 300);   // short loud beep
+  int vib = digitalRead(vibPin);
+
+  if (vib == HIGH && lastVib == LOW) {   // rising edge = new shock
+    alarmUntil = millis() + ALARM_MS;
+    tone(buzzerPin, 1500, 300);          // short loud beep (non-blocking)
     Serial.println("Vibration detected!");
-    delay(400);                   // simple debounce
-  } else {
-    digitalWrite(ledPin, LOW);
   }
+  lastVib = vib;
+
+  digitalWrite(ledPin, millis() < alarmUntil ? HIGH : LOW);
 }

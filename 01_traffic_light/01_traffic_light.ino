@@ -1,31 +1,37 @@
-// --- PIN DECLARATION ---
-int ledRed = 13;
-int ledYellow = 12;
-int ledGreen = 11;
+// 01 - Traffic Light
+// Cycles a red / green / yellow LED sequence like a real intersection light.
+
+const int ledRed    = 13;
+const int ledYellow = 12;
+const int ledGreen  = 11;
+
+// Phase durations in milliseconds — retune the whole cycle in one place.
+const unsigned long RED_MS    = 5000;
+const unsigned long GREEN_MS  = 4000;
+const unsigned long YELLOW_MS = 2000;
 
 void setup() {
-  // Configure pins 13, 12, 11 as OUTPUT signals
   pinMode(ledRed, OUTPUT);
   pinMode(ledYellow, OUTPUT);
   pinMode(ledGreen, OUTPUT);
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledYellow, LOW);
+  digitalWrite(ledGreen, LOW);
+}
+
+void setLights(bool red, bool yellow, bool green) {
+  digitalWrite(ledRed, red ? HIGH : LOW);
+  digitalWrite(ledYellow, yellow ? HIGH : LOW);
+  digitalWrite(ledGreen, green ? HIGH : LOW);
 }
 
 void loop() {
-  // --- PHASE 1: RED LIGHT ON FOR 5 SECONDS ---
-  digitalWrite(ledRed, HIGH);    // Turn on Red (HIGH = 5V)
-  digitalWrite(ledYellow, LOW);  // Turn off Yellow (LOW = 0V)
-  digitalWrite(ledGreen, LOW);   // Turn off Green
-  delay(5000);                   // Wait 5000 ms (5 seconds)
+  setLights(true, false, false);   // RED: vehicles must stop
+  delay(RED_MS);
 
-  // --- PHASE 2: GREEN LIGHT ON FOR 4 SECONDS ---
-  digitalWrite(ledRed, LOW);
-  digitalWrite(ledYellow, LOW);
-  digitalWrite(ledGreen, HIGH);  // Turn on Green
-  delay(4000);                   // Wait 4 seconds
+  setLights(false, false, true);   // GREEN: vehicles may go
+  delay(GREEN_MS);
 
-  // --- PHASE 3: YELLOW LIGHT ON FOR 2 SECONDS ---
-  digitalWrite(ledRed, LOW);
-  digitalWrite(ledYellow, HIGH); // Turn on Yellow
-  digitalWrite(ledGreen, LOW);
-  delay(2000);                   // Wait 2 seconds
+  setLights(false, true, false);   // YELLOW: caution / transition
+  delay(YELLOW_MS);
 }

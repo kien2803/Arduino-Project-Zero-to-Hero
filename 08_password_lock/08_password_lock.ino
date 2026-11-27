@@ -24,6 +24,9 @@ String input = "";
 const int ledPin    = 13;
 const int buzzerPin = 10;
 
+const unsigned long GRANTED_MS = 1500;  // LED stays on this long after success
+unsigned long grantedUntil = 0;
+
 void setup() {
   Serial.begin(9600);
   pinMode(ledPin, OUTPUT);
@@ -33,6 +36,12 @@ void setup() {
 }
 
 void loop() {
+  // End of the "granted" window — non-blocking (was delay(1500)).
+  if (grantedUntil && millis() >= grantedUntil) {
+    digitalWrite(ledPin, LOW);
+    grantedUntil = 0;
+  }
+
   char key = keypad.getKey();
   if (!key) return;
 
@@ -42,9 +51,8 @@ void loop() {
     if (input == password) {
       Serial.println("  --> ACCESS GRANTED");
       digitalWrite(ledPin, HIGH);
+      grantedUntil = millis() + GRANTED_MS;
       tone(buzzerPin, 1000, 200);
-      delay(1500);
-      digitalWrite(ledPin, LOW);
     } else {
       Serial.println("  --> WRONG PASSWORD");
       tone(buzzerPin, 300, 800);
